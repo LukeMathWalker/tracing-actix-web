@@ -143,7 +143,6 @@ where
             .map(|h| h.to_str().unwrap_or(""))
             .unwrap_or("");
         let request_id = RequestId(Uuid::new_v4());
-        req.extensions_mut().insert(request_id.clone());
         let span = tracing::info_span!(
             "Request",
             request_path = %req.path(),
@@ -152,6 +151,7 @@ where
             request_id = %request_id.0,
             status_code = tracing::field::Empty,
         );
+        req.extensions_mut().insert(request_id);
         let fut = self.service.call(req);
         Box::pin(
             async move {
