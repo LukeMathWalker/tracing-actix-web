@@ -112,7 +112,7 @@ pub struct TracingLoggerMiddleware<S> {
     service: S,
 }
 
-#[derive(Clone)]
+#[derive(Clone, Copy)]
 pub struct RequestId(Uuid);
 
 impl std::ops::Deref for RequestId {
@@ -188,11 +188,6 @@ impl FromRequest for RequestId {
     type Config = ();
 
     fn from_request(req: &HttpRequest, _: &mut Payload) -> Self::Future {
-        ready(
-            req.extensions()
-                .get::<RequestId>()
-                .map(RequestId::clone)
-                .ok_or(()),
-        )
+        ready(req.extensions().get::<RequestId>().copied().ok_or(()))
     }
 }
