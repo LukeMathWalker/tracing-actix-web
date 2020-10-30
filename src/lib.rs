@@ -15,9 +15,9 @@
 //! [`Logger`]: https://docs.rs/actix-web/3.0.2/actix_web/middleware/struct.Logger.html
 //! [`log`]: https://docs.rs/log
 //! [`tracing`]: https://docs.rs/tracing
-use actix_web::dev::{Service, ServiceRequest, ServiceResponse, Transform};
-use actix_web::Error;
-use futures::future::{ok, Ready};
+use actix_web::dev::{Payload, Service, ServiceRequest, ServiceResponse, Transform};
+use actix_web::{Error, FromRequest, HttpMessage, HttpRequest};
+use futures::future::{ok, ready, Ready};
 use futures::task::{Context, Poll};
 use std::future::Future;
 use std::pin::Pin;
@@ -112,6 +112,15 @@ pub struct TracingLoggerMiddleware<S> {
     service: S,
 }
 
+#[derive(Clone)]
+pub struct RequestId(Uuid);
+
+impl RequestId {
+    pub fn uuid(&self) -> &Uuid {
+        &self.0
+    }
+}
+
 impl<S, B> Service for TracingLoggerMiddleware<S>
 where
     S: Service<Request = ServiceRequest, Response = ServiceResponse<B>, Error = Error>,
@@ -133,12 +142,14 @@ where
             .get("User-Agent")
             .map(|h| h.to_str().unwrap_or(""))
             .unwrap_or("");
+        let request_id = RequestId(Uuid::new_v4());
+        req.extensions_mut().insert(request_id.clone());
         let span = tracing::info_span!(
             "Request",
             request_path = %req.path(),
             user_agent = %user_agent,
             client_ip_address = %req.connection_info().realip_remote_addr().unwrap_or(""),
-            request_id = %Uuid::new_v4(),
+            request_id = %request_id.0,
             status_code = tracing::field::Empty,
         );
         let fut = self.service.call(req);
@@ -153,6 +164,21 @@ where
                 outcome
             }
             .instrument(span),
+        )
+    }
+}
+
+impl FromRequest for RequestId {
+    type Error = ();
+    type Future = Ready<Result<Self, Self::Error>>;
+    type Config = ();
+
+    fn from_request(req: &HttpRequest, _: &mut Payload) -> Self::Future {
+        ready(
+            req.extensions()
+                .get::<RequestId>()
+                .map(RequestId::clone)
+                .ok_or(()),
         )
     }
 }
