@@ -115,9 +115,23 @@ pub struct TracingLoggerMiddleware<S> {
 #[derive(Clone)]
 pub struct RequestId(Uuid);
 
-impl RequestId {
-    pub fn uuid(&self) -> &Uuid {
+impl std::ops::Deref for RequestId {
+    type Target = Uuid;
+
+    fn deref(&self) -> &Self::Target {
         &self.0
+    }
+}
+
+impl std::convert::Into<Uuid> for RequestId {
+    fn into(self) -> Uuid {
+        self.0
+    }
+}
+
+impl std::fmt::Display for RequestId {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.0)
     }
 }
 
