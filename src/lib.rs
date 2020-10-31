@@ -112,6 +112,28 @@ pub struct TracingLoggerMiddleware<S> {
     service: S,
 }
 
+/// A unique identifier for each incomming request. This ID is added to the logger span.
+///
+/// Extracting a `RequestId` when the `TracingLogger` middleware is not registered, will result in
+/// a internal server error.
+///
+/// # Usage
+/// ```rust
+/// use actix_web::get;
+/// use tracing_actix_web::RequestId;
+/// use uuid::Uuid;
+///
+/// #[get("/")]
+/// async fn index(request_id: RequestId) -> String {
+///   format!("{}", request_id)
+/// }
+///
+/// #[get("/2")]
+/// async fn index2(request_id: RequestId) -> String {
+///  let uuid: Uuid = request_id.into();
+///   format!("{}", uuid)
+/// }
+/// ```
 #[derive(Clone, Copy)]
 pub struct RequestId(Uuid);
 
