@@ -112,7 +112,8 @@ pub struct TracingLoggerMiddleware<S> {
     service: S,
 }
 
-/// A unique identifier for each incomming request. This ID is added to the logger span.
+/// A unique identifier for each incomming request. This ID is added to the logger span, even if
+/// the `RequestId` is never extracted.
 ///
 /// Extracting a `RequestId` when the `TracingLogger` middleware is not registered, will result in
 /// a internal server error.
