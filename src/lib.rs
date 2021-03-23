@@ -38,7 +38,7 @@ use uuid::Uuid;
 ///
 /// ## Usage
 ///
-/// Register `TracingLogger` as a middleware for your application using `.wrap` on `App`.  
+/// Register `TracingLogger` as a middleware for your application using `.wrap` on `App`.
 /// Add a `Subscriber` implementation to output logs to the console.
 ///
 /// ```rust
@@ -87,9 +87,60 @@ use uuid::Uuid;
 /// [`Logger`]: https://docs.rs/actix-web/3.0.2/actix_web/middleware/struct.Logger.html
 /// [`log`]: https://docs.rs/log
 /// [`tracing`]: https://docs.rs/tracing
-pub struct TracingLogger;
+pub struct TracingLogger<B: 'static> {
+    new_span: &'static dyn Fn(Uuid, &ServiceRequest) -> Span,
+    update_span: &'static dyn Fn(&Span, &Result<ServiceResponse<B>, Error>),
+}
 
-impl<S, B> Transform<S, ServiceRequest> for TracingLogger
+impl<B: 'static> TracingLogger<B> {
+    pub fn new(
+        new_span: &'static dyn Fn(Uuid, &ServiceRequest) -> Span,
+        update_span: &'static dyn Fn(&Span, &Result<ServiceResponse<B>, Error>),
+    ) -> Self {
+        TracingLogger {
+            update_span,
+            new_span,
+        }
+    }
+}
+
+impl Default for TracingLogger<actix_web::dev::Body> {
+    fn default() -> Self {
+        TracingLogger {
+            new_span: &tracing_logger_default_new_span,
+            update_span: &tracing_logger_default_update_span,
+        }
+    }
+}
+
+fn tracing_logger_default_new_span(id: Uuid, req: &ServiceRequest) -> Span {
+    let user_agent = req
+        .headers()
+        .get("User-Agent")
+        .and_then(|h| h.to_str().ok())
+        .unwrap_or("");
+
+    tracing::info_span!(
+        "Request",
+        request_id = %id,
+        user_agent = %user_agent,
+        request_path = %req.path(),
+        http.method = %req.method(),
+        client_ip_address = %req.connection_info().realip_remote_addr().unwrap_or(""),
+        status_code = tracing::field::Empty,
+    )
+}
+
+fn tracing_logger_default_update_span(span: &Span, outcome: &Result<ServiceResponse, Error>) {
+    let status_code = match &outcome {
+        Ok(response) => response.response().status(),
+        Err(error) => error.as_response_error().status_code(),
+    };
+
+    span.record("status_code", &status_code.as_u16());
+}
+
+impl<S, B> Transform<S, ServiceRequest> for TracingLogger<B>
 where
     S: Service<ServiceRequest, Response = ServiceResponse<B>, Error = Error>,
     S::Future: 'static,
@@ -97,17 +148,23 @@ where
 {
     type Response = ServiceResponse<B>;
     type Error = Error;
-    type Transform = TracingLoggerMiddleware<S>;
+    type Transform = TracingLoggerMiddleware<S, B>;
     type InitError = ();
     type Future = Ready<Result<Self::Transform, Self::InitError>>;
 
     fn new_transform(&self, service: S) -> Self::Future {
-        ok(TracingLoggerMiddleware { service })
+        ok(TracingLoggerMiddleware {
+            new_span: self.new_span,
+            update_span: self.update_span,
+            service,
+        })
     }
 }
 
 #[doc(hidden)]
-pub struct TracingLoggerMiddleware<S> {
+pub struct TracingLoggerMiddleware<S, B: 'static> {
+    new_span: &'static dyn Fn(Uuid, &ServiceRequest) -> Span,
+    update_span: &'static dyn Fn(&Span, &Result<ServiceResponse<B>, Error>),
     service: S,
 }
 
@@ -157,7 +214,7 @@ impl std::fmt::Display for RequestId {
     }
 }
 
-impl<S, B> Service<ServiceRequest> for TracingLoggerMiddleware<S>
+impl<S, B> Service<ServiceRequest> for TracingLoggerMiddleware<S, B>
 where
     S: Service<ServiceRequest, Response = ServiceResponse<B>, Error = Error>,
     S::Future: 'static,
@@ -172,31 +229,18 @@ where
     }
 
     fn call(&self, req: ServiceRequest) -> Self::Future {
-        let user_agent = req
-            .headers()
-            .get("User-Agent")
-            .map(|h| h.to_str().unwrap_or(""))
-            .unwrap_or("");
         let request_id = RequestId(Uuid::new_v4());
-        let span = tracing::info_span!(
-            "Request",
-            http.method = %req.method(),
-            request_path = %req.path(),
-            user_agent = %user_agent,
-            client_ip_address = %req.connection_info().realip_remote_addr().unwrap_or(""),
-            request_id = %request_id.0,
-            status_code = tracing::field::Empty,
-        );
+
+        let span = (self.new_span)(request_id.0, &req);
+        let update_span = self.update_span;
+
         req.extensions_mut().insert(request_id);
         let fut = self.service.call(req);
+
         Box::pin(
             async move {
                 let outcome = fut.await;
-                let status_code = match &outcome {
-                    Ok(response) => response.response().status(),
-                    Err(error) => error.as_response_error().status_code(),
-                };
-                Span::current().record("status_code", &status_code.as_u16());
+                update_span(&Span::current(), &outcome);
                 outcome
             }
             .instrument(span),
