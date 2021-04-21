@@ -25,6 +25,7 @@ use tracing::Span;
 use tracing_futures::Instrument;
 use uuid::Uuid;
 use std::borrow::Cow;
+use actix_web::http::{Version, Method};
 
 /// `TracingLogger` is a middleware to log request and response info in a structured format.
 ///
@@ -173,6 +174,8 @@ where
     }
 
     fn call(&self, req: ServiceRequest) -> Self::Future {
+        let request_id = RequestId(Uuid::new_v4());
+
         let user_agent = req
             .headers()
             .get("User-Agent")
@@ -182,17 +185,22 @@ where
             .match_pattern()
             .map(Into::into)
             .unwrap_or_else(|| "default".into());
-        let request_id = RequestId(Uuid::new_v4());
+        let connection_info = req.connection_info();
         let span = tracing::info_span!(
             "Request",
-            http.method = %req.method(),
+            http.method = %http_method_str(req.method()),
             http.route = %http_route,
-            request_path = %req.path(),
-            user_agent = %user_agent,
-            client_ip_address = %req.connection_info().realip_remote_addr().unwrap_or(""),
+            http.flavor = %http_flavor(req.version()),
+            http.scheme = %http_scheme(connection_info.scheme()),
+            http.host = %connection_info.host(),
+            http.client_ip = %req.connection_info().realip_remote_addr().unwrap_or(""),
+            http.user_agent = %user_agent,
+            http.target = %req.uri().path_and_query().map(|p| p.as_str()).unwrap_or(""),
+            http.status_code = tracing::field::Empty,
             request_id = %request_id.0,
-            status_code = tracing::field::Empty,
         );
+        drop(connection_info);
+
         req.extensions_mut().insert(request_id);
         let fut = self.service.call(req);
         Box::pin(
@@ -202,7 +210,7 @@ where
                     Ok(response) => response.response().status(),
                     Err(error) => error.as_response_error().status_code(),
                 };
-                Span::current().record("status_code", &status_code.as_u16());
+                Span::current().record("http.status_code", &status_code.as_u16());
                 outcome
             }
             .instrument(span),
@@ -217,5 +225,42 @@ impl FromRequest for RequestId {
 
     fn from_request(req: &HttpRequest, _: &mut Payload) -> Self::Future {
         ready(req.extensions().get::<RequestId>().copied().ok_or(()))
+    }
+}
+
+#[inline]
+fn http_method_str(method: &Method) -> Cow<'static, str> {
+    match method {
+        &Method::OPTIONS => "OPTIONS".into(),
+        &Method::GET => "GET".into(),
+        &Method::POST => "POST".into(),
+        &Method::PUT => "PUT".into(),
+        &Method::DELETE => "DELETE".into(),
+        &Method::HEAD => "HEAD".into(),
+        &Method::TRACE => "TRACE".into(),
+        &Method::CONNECT => "CONNECT".into(),
+        &Method::PATCH => "PATCH".into(),
+        other => other.to_string().into(),
+    }
+}
+
+#[inline]
+fn http_flavor(version: Version) -> Cow<'static, str> {
+    match version {
+        Version::HTTP_09 => "0.9".into(),
+        Version::HTTP_10 => "1.0".into(),
+        Version::HTTP_11 => "1.1".into(),
+        Version::HTTP_2 => "2.0".into(),
+        Version::HTTP_3 => "3.0".into(),
+        other => format!("{:?}", other).into(),
+    }
+}
+
+#[inline]
+fn http_scheme(scheme: &str) -> Cow<'static, str> {
+    match scheme {
+        "http" => "http".into(),
+        "https" => "https".into(),
+        other => other.to_string().into(),
     }
 }
