@@ -198,6 +198,7 @@ where
             http.target = %req.uri().path_and_query().map(|p| p.as_str()).unwrap_or(""),
             http.status_code = tracing::field::Empty,
             otel.kind = "server",
+            otel.status_code = tracing::field::Empty,
             request_id = %request_id.0,
         );
         drop(connection_info);
