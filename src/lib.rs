@@ -204,6 +204,7 @@ where
             http.status_code = tracing::field::Empty,
             otel.kind = "server",
             otel.status_code = tracing::field::Empty,
+            trace_id = tracing::field::Empty,
             request_id = %request_id.0,
         );
         drop(connection_info);
@@ -211,9 +212,14 @@ where
         #[cfg(feature = "opentelemetry_0_13")]
         {
             use tracing_opentelemetry::OpenTelemetrySpanExt;
+            use opentelemetry::trace::TraceContextExt;
+
             let parent_context = opentelemetry::global::get_text_map_propagator(|propagator| {
                 propagator.extract(&crate::otel::RequestHeaderCarrier::new(req.headers_mut()))
             });
+            if let Some(remote_span_context) = parent_context.remote_span_context() {
+                span.record("trace_id", &tracing::field::display(remote_span_context.trace_id().to_hex()));
+            }
             span.set_parent(parent_context);
         }
 
