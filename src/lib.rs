@@ -27,6 +27,9 @@ use uuid::Uuid;
 use std::borrow::Cow;
 use actix_web::http::{Version, Method};
 
+#[cfg(feature = "opentelemetry_0_13")]
+mod otel;
+
 /// `TracingLogger` is a middleware to log request and response info in a structured format.
 ///
 /// `TracingLogger` is designed as a drop-in replacement of [`actix-web`]'s [`Logger`].
@@ -173,7 +176,9 @@ where
         self.service.poll_ready(cx)
     }
 
-    fn call(&self, req: ServiceRequest) -> Self::Future {
+    // `mut` is needed when the OpenTelemetry feature is active
+    #[allow(unused_mut)]
+    fn call(&self, mut req: ServiceRequest) -> Self::Future {
         let request_id = RequestId(Uuid::new_v4());
 
         let user_agent = req
@@ -202,6 +207,15 @@ where
             request_id = %request_id.0,
         );
         drop(connection_info);
+
+        #[cfg(feature = "opentelemetry_0_13")]
+        {
+            use tracing_opentelemetry::OpenTelemetrySpanExt;
+            let parent_context = opentelemetry::global::get_text_map_propagator(|propagator| {
+                propagator.extract(&crate::otel::RequestHeaderCarrier::new(req.headers_mut()))
+            });
+            span.set_parent(parent_context);
+        }
 
         req.extensions_mut().insert(request_id);
         let fut = self.service.call(req);
