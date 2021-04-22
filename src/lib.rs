@@ -211,7 +211,7 @@ where
                 match &outcome {
                     Ok(response) => {
                         Span::current().record("http.status_code", &response.response().status().as_u16());
-                        Span::current().record("otel.status_code", "ok");
+                        Span::current().record("otel.status_code", &"ok");
                     },
                     Err(error) => {
                         let response_error = error.as_response_error();
@@ -221,10 +221,10 @@ where
                         let error_msg_prefix = "Error encountered while processing the incoming request";
                         if status_code.is_client_error() {
                             tracing::warn!("{}: {:?}", error_msg_prefix, response_error);
-                            Span::current().record("otel.status_code", "ok");
+                            Span::current().record("otel.status_code", &"ok");
                         } else {
                             tracing::error!("{}: {:?}", error_msg_prefix, response_error);
-                            Span::current().record("otel.status_code", "error");
+                            Span::current().record("otel.status_code", &"error");
                         }
                     }
                 };
