@@ -207,11 +207,26 @@ where
         Box::pin(
             async move {
                 let outcome = fut.await;
-                let status_code = match &outcome {
-                    Ok(response) => response.response().status(),
-                    Err(error) => error.as_response_error().status_code(),
+                match &outcome {
+                    Ok(response) => {
+                        Span::current().record("http.status_code", &response.response().status().as_u16());
+                        Span::current().record("otel.status_code", "ok");
+                    },
+                    Err(error) => {
+                        let response_error = error.as_response_error();
+                        let status_code = response_error.status_code();
+                        Span::current().record("http.status_code", &status_code.as_u16());
+
+                        let error_msg_prefix = "Error encountered while processing the incoming request";
+                        if status_code.is_client_error() {
+                            tracing::warn!("{}: {:?}", error_msg_prefix, response_error);
+                            Span::current().record("otel.status_code", "ok");
+                        } else {
+                            tracing::error!("{}: {:?}", error_msg_prefix, response_error);
+                            Span::current().record("otel.status_code", "error");
+                        }
+                    }
                 };
-                Span::current().record("http.status_code", &status_code.as_u16());
                 outcome
             }
             .instrument(span),
