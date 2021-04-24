@@ -16,16 +16,16 @@
 //! [`log`]: https://docs.rs/log
 //! [`tracing`]: https://docs.rs/tracing
 use actix_web::dev::{Payload, Service, ServiceRequest, ServiceResponse, Transform};
+use actix_web::http::{Method, Version};
 use actix_web::{Error, FromRequest, HttpMessage, HttpRequest};
 use futures::future::{ok, ready, Ready};
 use futures::task::{Context, Poll};
+use std::borrow::Cow;
 use std::future::Future;
 use std::pin::Pin;
 use tracing::Span;
 use tracing_futures::Instrument;
 use uuid::Uuid;
-use std::borrow::Cow;
-use actix_web::http::{Version, Method};
 
 #[doc(hidden)]
 pub mod root_span;
@@ -95,28 +95,68 @@ mod otel;
 /// [`Logger`]: https://docs.rs/actix-web/3.0.2/actix_web/middleware/struct.Logger.html
 /// [`log`]: https://docs.rs/log
 /// [`tracing`]: https://docs.rs/tracing
-pub struct TracingLogger;
+pub struct TracingLogger<RootSpanBuilder> {
+    root_span_builder: std::marker::PhantomData<RootSpanBuilder>,
+}
 
-impl<S, B> Transform<S, ServiceRequest> for TracingLogger
+pub struct DefaultRootSpan;
+
+impl RootSpanBuilder for DefaultRootSpan {
+    fn on_request_start(request: &ServiceRequest) -> Span {
+        root_span!(request)
+    }
+
+    fn on_request_end<B>(span: Span, response: &Result<ServiceResponse<B>, Error>) {
+        match &response {
+            Ok(response) => {
+                span.record("http.status_code", &response.response().status().as_u16());
+                span.record("otel.status_code", &"ok");
+            }
+            Err(error) => {
+                let response_error = error.as_response_error();
+                let status_code = response_error.status_code();
+                span.record("http.status_code", &status_code.as_u16());
+
+                if status_code.is_client_error() {
+                    span.record("otel.status_code", &"ok");
+                } else {
+                    span.record("otel.status_code", &"error");
+                }
+            }
+        };
+    }
+}
+
+pub trait RootSpanBuilder {
+    fn on_request_start(request: &ServiceRequest) -> Span;
+    fn on_request_end<B>(span: Span, response: &Result<ServiceResponse<B>, Error>);
+}
+
+impl<S, B, RootSpan> Transform<S, ServiceRequest> for TracingLogger<RootSpan>
 where
     S: Service<ServiceRequest, Response = ServiceResponse<B>, Error = Error>,
     S::Future: 'static,
     B: 'static,
+    RootSpan: RootSpanBuilder,
 {
     type Response = ServiceResponse<B>;
     type Error = Error;
-    type Transform = TracingLoggerMiddleware<S>;
+    type Transform = TracingLoggerMiddleware<S, RootSpan>;
     type InitError = ();
     type Future = Ready<Result<Self::Transform, Self::InitError>>;
 
     fn new_transform(&self, service: S) -> Self::Future {
-        ok(TracingLoggerMiddleware { service })
+        ok(TracingLoggerMiddleware {
+            service,
+            root_span_builder: std::marker::PhantomData::default(),
+        })
     }
 }
 
 #[doc(hidden)]
-pub struct TracingLoggerMiddleware<S> {
+pub struct TracingLoggerMiddleware<S, RootSpanBuilder> {
     service: S,
+    root_span_builder: std::marker::PhantomData<RootSpanBuilder>,
 }
 
 /// A unique identifier for each incomming request. This ID is added to the logger span, even if
@@ -165,11 +205,12 @@ impl std::fmt::Display for RequestId {
     }
 }
 
-impl<S, B> Service<ServiceRequest> for TracingLoggerMiddleware<S>
+impl<S, B, RootSpan> Service<ServiceRequest> for TracingLoggerMiddleware<S, RootSpan>
 where
     S: Service<ServiceRequest, Response = ServiceResponse<B>, Error = Error>,
     S::Future: 'static,
     B: 'static,
+    RootSpan: RootSpanBuilder,
 {
     type Response = ServiceResponse<B>;
     type Error = Error;
@@ -180,31 +221,25 @@ where
     }
 
     fn call(&self, req: ServiceRequest) -> Self::Future {
-        let span = root_span!(req);
+        let span = RootSpan::on_request_start(&req);
         let fut = self.service.call(req);
         Box::pin(
             async move {
                 let outcome = fut.await;
-                match &outcome {
-                    Ok(response) => {
-                        Span::current().record("http.status_code", &response.response().status().as_u16());
-                        Span::current().record("otel.status_code", &"ok");
-                    },
-                    Err(error) => {
-                        let response_error = error.as_response_error();
-                        let status_code = response_error.status_code();
-                        Span::current().record("http.status_code", &status_code.as_u16());
+                RootSpan::on_request_end(Span::current(), &outcome);
 
-                        let error_msg_prefix = "Error encountered while processing the incoming request";
-                        if status_code.is_client_error() {
-                            tracing::warn!("{}: {:?}", error_msg_prefix, response_error);
-                            Span::current().record("otel.status_code", &"ok");
-                        } else {
-                            tracing::error!("{}: {:?}", error_msg_prefix, response_error);
-                            Span::current().record("otel.status_code", &"error");
-                        }
+                #[cfg(feature = "emit_event_on_error")]
+                if let Err(error) = &outcome {
+                    let response_error = error.as_response_error();
+                    let status_code = response_error.status_code();
+                    let error_msg_prefix =
+                        "Error encountered while processing the incoming request";
+                    if status_code.is_client_error() {
+                        tracing::warn!("{}: {:?}", error_msg_prefix, response_error);
+                    } else {
+                        tracing::error!("{}: {:?}", error_msg_prefix, response_error);
                     }
-                };
+                }
                 outcome
             }
             .instrument(span),

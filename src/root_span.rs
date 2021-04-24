@@ -56,17 +56,15 @@ pub mod private {
 
     #[cfg(not(feature = "opentelemetry_0_13"))]
     #[doc(hidden)]
-    pub fn set_otel_parent(_req: &ServiceRequest, _span: &tracing::Span)
-    {
+    pub fn set_otel_parent(_req: &ServiceRequest, _span: &tracing::Span) {
         // No-op if the OpenTelemetry feature is not active
     }
 
     #[cfg(feature = "opentelemetry_0_13")]
     #[doc(hidden)]
-    pub fn set_otel_parent(req: &ServiceRequest, span: &tracing::Span)
-    {
-        use tracing_opentelemetry::OpenTelemetrySpanExt as _;
+    pub fn set_otel_parent(req: &ServiceRequest, span: &tracing::Span) {
         use opentelemetry::trace::TraceContextExt as _;
+        use tracing_opentelemetry::OpenTelemetrySpanExt as _;
 
         let parent_context = opentelemetry::global::get_text_map_propagator(|propagator| {
             propagator.extract(&crate::otel::RequestHeaderCarrier::new(req.headers()))
