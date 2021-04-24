@@ -7,7 +7,7 @@ macro_rules! root_span {
     // One or more additional fields, comma separated
     ($request:ident, $($field:tt),*) => {
         {
-            let request_id = $crate::root_span::private::generate_request_id();
+            let request_id = $crate::root_span_macro::private::generate_request_id();
 
             let user_agent = $request
                 .headers()
@@ -21,10 +21,10 @@ macro_rules! root_span {
             let connection_info = $request.connection_info();
             let span = tracing::info_span!(
                 "HTTP request",
-                http.method = %$crate::root_span::private::http_method_str($request.method()),
+                http.method = %$crate::root_span_macro::private::http_method_str($request.method()),
                 http.route = %http_route,
-                http.flavor = %$crate::root_span::private::http_flavor($request.version()),
-                http.scheme = %$crate::root_span::private::http_scheme(connection_info.scheme()),
+                http.flavor = %$crate::root_span_macro::private::http_flavor($request.version()),
+                http.scheme = %$crate::root_span_macro::private::http_scheme(connection_info.scheme()),
                 http.host = %connection_info.host(),
                 http.client_ip = %$request.connection_info().realip_remote_addr().unwrap_or(""),
                 http.user_agent = %user_agent,
@@ -38,8 +38,8 @@ macro_rules! root_span {
             );
             drop(connection_info);
 
-            $crate::root_span::private::set_otel_parent(&$request, &span);
-            $crate::root_span::private::store_request_id(&$request, request_id);
+            $crate::root_span_macro::private::set_otel_parent(&$request, &span);
+            $crate::root_span_macro::private::store_request_id(&$request, request_id);
             span
         }
     };

@@ -24,7 +24,7 @@ pub use request_id::RequestId;
 pub use root_span_builder::{DefaultRootSpan, RootSpanBuilder};
 
 #[doc(hidden)]
-pub mod root_span;
+pub mod root_span_macro;
 
 #[cfg(feature = "opentelemetry_0_13")]
 mod otel;
