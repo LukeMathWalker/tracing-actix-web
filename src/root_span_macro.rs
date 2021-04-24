@@ -7,8 +7,6 @@ macro_rules! root_span {
     // One or more additional fields, comma separated
     ($request:ident, $($field:tt),*) => {
         {
-            let request_id = $crate::root_span_macro::private::generate_request_id();
-
             let user_agent = $request
                 .headers()
                 .get("User-Agent")
@@ -19,7 +17,8 @@ macro_rules! root_span {
                 .map(Into::into)
                 .unwrap_or_else(|| "default".into());
             let connection_info = $request.connection_info();
-            let span = tracing::info_span!(
+            let request_id = $crate::root_span_macro::private::get_request_id($request);
+            let span = $crate::root_span_macro::private::tracing::info_span!(
                 "HTTP request",
                 http.method = %$crate::root_span_macro::private::http_method_str($request.method()),
                 http.route = %http_route,
@@ -29,17 +28,16 @@ macro_rules! root_span {
                 http.client_ip = %$request.connection_info().realip_remote_addr().unwrap_or(""),
                 http.user_agent = %user_agent,
                 http.target = %$request.uri().path_and_query().map(|p| p.as_str()).unwrap_or(""),
-                http.status_code = tracing::field::Empty,
+                http.status_code = $crate::root_span_macro::private::tracing::field::Empty,
                 otel.kind = "server",
-                otel.status_code = tracing::field::Empty,
-                trace_id = tracing::field::Empty,
+                otel.status_code = $crate::root_span_macro::private::tracing::field::Empty,
+                trace_id = $crate::root_span_macro::private::tracing::field::Empty,
                 request_id = %request_id,
                 $($field),*
             );
-            drop(connection_info);
+            std::mem::drop(connection_info);
 
             $crate::root_span_macro::private::set_otel_parent(&$request, &span);
-            $crate::root_span_macro::private::store_request_id(&$request, request_id);
             span
         }
     };
@@ -55,6 +53,8 @@ pub mod private {
     use actix_web::dev::ServiceRequest;
     use actix_web::http::{Method, Version};
     use std::borrow::Cow;
+
+    pub use tracing;
 
     #[cfg(not(feature = "opentelemetry_0_13"))]
     #[doc(hidden)]
@@ -124,9 +124,9 @@ pub mod private {
     }
 
     #[doc(hidden)]
-    pub fn store_request_id(request: &ServiceRequest, request_id: RequestId) {
+    pub fn get_request_id(request: &ServiceRequest) -> RequestId {
         use actix_web::HttpMessage;
 
-        request.extensions_mut().insert(request_id);
+        request.extensions().get::<RequestId>().cloned().unwrap()
     }
 }

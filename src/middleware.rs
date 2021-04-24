@@ -22,7 +22,7 @@ use tracing_futures::Instrument;
 /// ## Usage
 ///
 /// Register `TracingLogger` as a middleware for your application using `.wrap` on `App`.  
-/// Add a `Subscriber` implementation to output logs to the console.
+/// In this example we add a [`tracing::Subscriber`] to output structured logs to the console.
 ///
 /// ```rust
 /// use actix_web::middleware::Logger;

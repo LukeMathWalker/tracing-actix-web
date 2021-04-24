@@ -5,7 +5,7 @@ use tracing::Span;
 
 pub trait RootSpanBuilder {
     fn on_request_start(request: &ServiceRequest) -> Span;
-    fn on_request_end<B>(span: Span, response: &Result<ServiceResponse<B>, Error>);
+    fn on_request_end<B>(span: Span, outcome: &Result<ServiceResponse<B>, Error>);
 }
 
 pub struct DefaultRootSpanBuilder;
@@ -15,8 +15,8 @@ impl RootSpanBuilder for DefaultRootSpanBuilder {
         root_span!(request)
     }
 
-    fn on_request_end<B>(span: Span, response: &Result<ServiceResponse<B>, Error>) {
-        match &response {
+    fn on_request_end<B>(span: Span, outcome: &Result<ServiceResponse<B>, Error>) {
+        match &outcome {
             Ok(response) => {
                 span.record("http.status_code", &response.response().status().as_u16());
                 span.record("otel.status_code", &"ok");
