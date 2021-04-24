@@ -27,6 +27,9 @@ use uuid::Uuid;
 use std::borrow::Cow;
 use actix_web::http::{Version, Method};
 
+#[doc(hidden)]
+pub mod root_span;
+
 #[cfg(feature = "opentelemetry_0_13")]
 mod otel;
 
@@ -179,50 +182,7 @@ where
     // `mut` is needed when the OpenTelemetry feature is active
     #[allow(unused_mut)]
     fn call(&self, mut req: ServiceRequest) -> Self::Future {
-        let request_id = RequestId(Uuid::new_v4());
-
-        let user_agent = req
-            .headers()
-            .get("User-Agent")
-            .map(|h| h.to_str().unwrap_or(""))
-            .unwrap_or("");
-        let http_route: Cow<'static, str> = req
-            .match_pattern()
-            .map(Into::into)
-            .unwrap_or_else(|| "default".into());
-        let connection_info = req.connection_info();
-        let span = tracing::info_span!(
-            "HTTP request",
-            http.method = %http_method_str(req.method()),
-            http.route = %http_route,
-            http.flavor = %http_flavor(req.version()),
-            http.scheme = %http_scheme(connection_info.scheme()),
-            http.host = %connection_info.host(),
-            http.client_ip = %req.connection_info().realip_remote_addr().unwrap_or(""),
-            http.user_agent = %user_agent,
-            http.target = %req.uri().path_and_query().map(|p| p.as_str()).unwrap_or(""),
-            http.status_code = tracing::field::Empty,
-            otel.kind = "server",
-            otel.status_code = tracing::field::Empty,
-            trace_id = tracing::field::Empty,
-            request_id = %request_id.0,
-        );
-        drop(connection_info);
-
-        #[cfg(feature = "opentelemetry_0_13")]
-        {
-            use tracing_opentelemetry::OpenTelemetrySpanExt;
-            use opentelemetry::trace::TraceContextExt;
-
-            let parent_context = opentelemetry::global::get_text_map_propagator(|propagator| {
-                propagator.extract(&crate::otel::RequestHeaderCarrier::new(req.headers_mut()))
-            });
-            let trace_id = parent_context.span().trace_id().to_hex();
-            span.record("trace_id", &tracing::field::display(trace_id));
-            span.set_parent(parent_context);
-        }
-
-        req.extensions_mut().insert(request_id);
+        let span = root_span!(req);
         let fut = self.service.call(req);
         Box::pin(
             async move {
