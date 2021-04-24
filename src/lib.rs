@@ -179,9 +179,7 @@ where
         self.service.poll_ready(cx)
     }
 
-    // `mut` is needed when the OpenTelemetry feature is active
-    #[allow(unused_mut)]
-    fn call(&self, mut req: ServiceRequest) -> Self::Future {
+    fn call(&self, req: ServiceRequest) -> Self::Future {
         let span = root_span!(req);
         let fut = self.service.call(req);
         Box::pin(
