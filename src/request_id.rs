@@ -3,11 +3,10 @@ use actix_web::{FromRequest, HttpRequest};
 use std::future::{ready, Ready};
 use uuid::Uuid;
 
-/// A unique identifier for each incoming request. This ID is added to the logger span, even if
-/// the `RequestId` is never extracted.
+/// A unique identifier generated for each incoming request.
 ///
-/// Extracting a `RequestId` when the `TracingLogger` middleware is not registered, will result in
-/// a internal server error.
+/// Extracting a `RequestId` when the `TracingLogger` middleware is not registered will result in
+/// an internal server error.
 ///
 /// # Usage
 /// ```rust

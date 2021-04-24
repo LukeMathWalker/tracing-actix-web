@@ -166,7 +166,7 @@
 //! async fn handler(root_span: RootSpan) -> HttpResponse {
 //!     let application_id: &str = todo!("Some domain logic");
 //!     // Record the property value against the root span
-//!     root_span.record("application_id", application_id);
+//!     root_span.record("application_id", &application_id);
 //!
 //!     // [...]
 //!     # todo!()

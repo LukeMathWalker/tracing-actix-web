@@ -3,11 +3,33 @@ use actix_web::dev::{ServiceRequest, ServiceResponse};
 use actix_web::Error;
 use tracing::Span;
 
+/// `RootSpanBuilder` allows you to customise the root span attached by
+/// [`TracingLogger`] to incoming requests.
+///
+/// [`TracingLogger`]: crate::TracingLogger
 pub trait RootSpanBuilder {
     fn on_request_start(request: &ServiceRequest) -> Span;
     fn on_request_end<B>(span: Span, outcome: &Result<ServiceResponse<B>, Error>);
 }
 
+/// The default [`RootSpanBuilder`] for [`TracingLogger`].
+///
+/// It captures:
+/// - HTTP method (`http.method`);
+/// - HTTP route (`http.route`), with templated parameters;
+/// - HTTP version (`http.flavor`);
+/// - HTTP host (`http.host`);
+/// - Client IP (`http.client_ip`);
+/// - User agent (`http.user_agent`);
+/// - Request path (`http.target`);
+/// - Status code (`http.status_code`);
+/// - [Request id](crate::RequestId) (`request_id`);
+/// - OpenTelemetry trace identifier (`trace_id`). Empty if the feature is not enabled;
+/// - OpenTelemetry span kind, set to `server` (`otel.kind`).
+///
+/// All field names follow [OpenTelemetry's semantic convention](https://github.com/open-telemetry/opentelemetry-specification/tree/main/specification/trace/semantic_conventions).
+///
+/// [`TracingLogger`]: crate::TracingLogger
 pub struct DefaultRootSpanBuilder;
 
 impl RootSpanBuilder for DefaultRootSpanBuilder {

@@ -4,6 +4,26 @@ use std::future::{ready, Ready};
 use tracing::Span;
 
 #[derive(Clone)]
+/// The root span associated to the in-flight current request.
+///
+/// It can be used to populate additional properties using values computed or retrieved in the request
+/// handler - see the crate-level documentation for more details.
+///
+/// Extracting a `RootSpan` when the `TracingLogger` middleware is not registered will result in
+/// an internal server error.
+///
+/// # Usage
+/// ```rust
+/// use actix_web::get;
+/// use tracing_actix_web::RootSpan;
+/// use uuid::Uuid;
+///
+/// #[get("/")]
+/// async fn index(root_span: RootSpan) -> String {
+///     root_span.record("route", &"/");
+///     # "Hello".to_string()
+/// }
+/// ```
 pub struct RootSpan(Span);
 
 impl RootSpan {
