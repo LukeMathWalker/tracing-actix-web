@@ -8,9 +8,9 @@ pub trait RootSpanBuilder {
     fn on_request_end<B>(span: Span, response: &Result<ServiceResponse<B>, Error>);
 }
 
-pub struct DefaultRootSpan;
+pub struct DefaultRootSpanBuilder;
 
-impl RootSpanBuilder for DefaultRootSpan {
+impl RootSpanBuilder for DefaultRootSpanBuilder {
     fn on_request_start(request: &ServiceRequest) -> Span {
         root_span!(request)
     }

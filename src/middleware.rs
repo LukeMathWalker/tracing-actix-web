@@ -1,6 +1,6 @@
-use crate::{DefaultRootSpan, RootSpanBuilder};
+use crate::{DefaultRootSpanBuilder, RootSpan, RootSpanBuilder};
 use actix_web::dev::{Service, ServiceRequest, ServiceResponse, Transform};
-use actix_web::Error;
+use actix_web::{Error, HttpMessage};
 use futures::future::{ok, Ready};
 use futures::task::{Context, Poll};
 use std::future::Future;
@@ -74,7 +74,7 @@ pub struct TracingLogger<RootSpan: RootSpanBuilder> {
     root_span_builder: std::marker::PhantomData<RootSpan>,
 }
 
-impl Default for TracingLogger<DefaultRootSpan> {
+impl Default for TracingLogger<DefaultRootSpanBuilder> {
     fn default() -> Self {
         TracingLogger::new()
     }
@@ -115,12 +115,12 @@ pub struct TracingLoggerMiddleware<S, RootSpanBuilder> {
     root_span_builder: std::marker::PhantomData<RootSpanBuilder>,
 }
 
-impl<S, B, RootSpan> Service<ServiceRequest> for TracingLoggerMiddleware<S, RootSpan>
+impl<S, B, RootSpanType> Service<ServiceRequest> for TracingLoggerMiddleware<S, RootSpanType>
 where
     S: Service<ServiceRequest, Response = ServiceResponse<B>, Error = Error>,
     S::Future: 'static,
     B: 'static,
-    RootSpan: RootSpanBuilder,
+    RootSpanType: RootSpanBuilder,
 {
     type Response = ServiceResponse<B>;
     type Error = Error;
@@ -131,12 +131,16 @@ where
     }
 
     fn call(&self, req: ServiceRequest) -> Self::Future {
-        let span = RootSpan::on_request_start(&req);
+        let root_span = RootSpanType::on_request_start(&req);
+
+        let root_span_wrapper = RootSpan::new(root_span.clone());
+        req.extensions_mut().insert(root_span_wrapper);
+
         let fut = self.service.call(req);
         Box::pin(
             async move {
                 let outcome = fut.await;
-                RootSpan::on_request_end(Span::current(), &outcome);
+                RootSpanType::on_request_end(Span::current(), &outcome);
 
                 #[cfg(feature = "emit_event_on_error")]
                 if let Err(error) = &outcome {
@@ -152,7 +156,7 @@ where
                 }
                 outcome
             }
-            .instrument(span),
+            .instrument(root_span),
         )
     }
 }

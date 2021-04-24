@@ -17,11 +17,13 @@
 //! [`tracing`]: https://docs.rs/tracing
 mod middleware;
 mod request_id;
+mod root_span;
 mod root_span_builder;
 
 pub use middleware::TracingLogger;
 pub use request_id::RequestId;
-pub use root_span_builder::{DefaultRootSpan, RootSpanBuilder};
+pub use root_span::RootSpan;
+pub use root_span_builder::{DefaultRootSpanBuilder, RootSpanBuilder};
 
 #[doc(hidden)]
 pub mod root_span_macro;
