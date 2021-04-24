@@ -95,8 +95,20 @@ mod otel;
 /// [`Logger`]: https://docs.rs/actix-web/3.0.2/actix_web/middleware/struct.Logger.html
 /// [`log`]: https://docs.rs/log
 /// [`tracing`]: https://docs.rs/tracing
-pub struct TracingLogger<RootSpanBuilder> {
-    root_span_builder: std::marker::PhantomData<RootSpanBuilder>,
+pub struct TracingLogger<RootSpan: RootSpanBuilder> {
+    root_span_builder: std::marker::PhantomData<RootSpan>,
+}
+
+impl<RootSpan: RootSpanBuilder> TracingLogger<RootSpan> {
+    pub fn default() -> TracingLogger<DefaultRootSpan> {
+        TracingLogger::new()
+    }
+
+    pub fn new() -> TracingLogger<RootSpan> {
+        TracingLogger {
+            root_span_builder: Default::default(),
+        }
+    }
 }
 
 pub struct DefaultRootSpan;
