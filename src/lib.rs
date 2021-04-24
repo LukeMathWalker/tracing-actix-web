@@ -192,7 +192,7 @@ where
             .unwrap_or_else(|| "default".into());
         let connection_info = req.connection_info();
         let span = tracing::info_span!(
-            "Request",
+            "HTTP request",
             http.method = %http_method_str(req.method()),
             http.route = %http_route,
             http.flavor = %http_flavor(req.version()),
