@@ -217,9 +217,8 @@ where
             let parent_context = opentelemetry::global::get_text_map_propagator(|propagator| {
                 propagator.extract(&crate::otel::RequestHeaderCarrier::new(req.headers_mut()))
             });
-            if let Some(remote_span_context) = parent_context.remote_span_context() {
-                span.record("trace_id", &tracing::field::display(remote_span_context.trace_id().to_hex()));
-            }
+            let trace_id = parent_context.span().trace_id().to_hex();
+            span.record("trace_id", &tracing::field::display(trace_id));
             span.set_parent(parent_context);
         }
 
