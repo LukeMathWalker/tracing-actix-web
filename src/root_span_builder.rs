@@ -24,7 +24,7 @@ pub trait RootSpanBuilder {
 /// - Request path (`http.target`);
 /// - Status code (`http.status_code`);
 /// - [Request id](crate::RequestId) (`request_id`);
-/// - OpenTelemetry trace identifier (`trace_id`). Empty if the feature is not enabled;
+/// - [OpenTelemetry trace identifier](https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/overview.md#spancontext) (`trace_id`). Empty if the feature is not enabled;
 /// - OpenTelemetry span kind, set to `server` (`otel.kind`).
 ///
 /// All field names follow [OpenTelemetry's semantic convention](https://github.com/open-telemetry/opentelemetry-specification/tree/main/specification/trace/semantic_conventions).

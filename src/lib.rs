@@ -37,7 +37,7 @@
 //! }
 //! ```
 //!
-//! Check out the examples on GitHub to get a taste of how [`TracingLogger`] can be used to observe and monitor your
+//! Check out [the examples on GitHub] to get a taste of how [`TracingLogger`] can be used to observe and monitor your
 //! application.  
 //!
 //! # `tracing`: who art thou?
@@ -144,7 +144,7 @@
 //! by [`DefaultRootSpanBuilder`] with the custom ones you specify when calling it (e.g. `client_id` in our example).  
 //!
 //! We need to use a macro because `tracing` requires all the properties attached to a span to be declared upfront, when the span is created.  
-//! You cannot add new ones afterwards. This makes it extremely fast, but is pushes us to use macros when we need some level of
+//! You cannot add new ones afterwards. This makes it extremely fast, but it pushes us to reach for macros when we need some level of
 //! composition.
 //!
 //! # The [`RootSpan`] extractor
@@ -207,6 +207,20 @@
 //!   format!("{}", request_id)
 //! }
 //! ```
+//!
+//! # OpenTelemetry integration
+//!
+//! `tracing_actix_web` follows [OpenTelemetry's semantic convention](https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/overview.md#spancontext)
+//! for field names.  
+//! Furthermore, if you have not disabled the `opentelemetry_0_13` feature flag, `tracing_actix_web` automatically
+//! performs trace propagation according to the OpenTelemetry standard.
+//! It tries to extract the OpenTelemetry context out of the headers of incoming requests and, when it finds one, it sets
+//! it as the remote context for the current root span.
+//!
+//! If you add [`tracing-opentelemetry::OpenTelemetryLayer`](https://docs.rs/tracing-opentelemetry/0.12.0/tracing_opentelemetry/struct.OpenTelemetryLayer.html)
+//! in your `tracing::Subscriber` you will be able to export the root span (and all its children) as OpenTelemetry spans.
+//!
+//! Check out the [relevant example in the GitHub repository] for reference.
 //!
 //! [root span]: crate::RootSpan
 //! [`actix-web`]: https://docs.rs/actix-web/4.0.0-beta.6/actix_web/index.html

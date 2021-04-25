@@ -7,11 +7,11 @@
 ///
 /// `tracing` requires all the properties attached to a span to be declared upfront, when the span is created.
 /// You cannot add new ones afterwards.
-/// This makes it extremely fast, but is pushes us to use macros when we need some level of composition.
+/// This makes it extremely fast, but it pushes us to reach for macros when we need some level of composition.
 ///
 /// # Macro syntax
 ///
-/// The first argument of the macro must be a reference to an [`actix_web::dev::ServiceRequest`].
+/// The first argument passed to `root_span!` must be a reference to an [`actix_web::dev::ServiceRequest`].
 ///
 /// ```rust
 /// use actix_web::dev::{ServiceResponse, ServiceRequest};
