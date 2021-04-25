@@ -29,4 +29,5 @@ Hello world!
 
 ## Traces
 
-You can look at the exported traces in your browser by visiting [http://localhost:16686](http://localhost:16686).
+You can look at the exported traces in your browser by visiting [http://localhost:16686](http://localhost:16686).  
+Spans will be also printed to the console in JSON format, as structured log records.
