@@ -1,5 +1,5 @@
 [workspace]
-members = [".", "examples/opentelemetry"]
+members = [".", "examples/opentelemetry", "examples/custom-root-span"]
 
 [package]
 name = "tracing-actix-web"

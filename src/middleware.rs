@@ -67,6 +67,12 @@ pub struct TracingLogger<RootSpan: RootSpanBuilder> {
     root_span_builder: std::marker::PhantomData<RootSpan>,
 }
 
+impl<RootSpan: RootSpanBuilder> Clone for TracingLogger<RootSpan> {
+    fn clone(&self) -> Self {
+        Self::new()
+    }
+}
+
 impl Default for TracingLogger<DefaultRootSpanBuilder> {
     fn default() -> Self {
         TracingLogger::new()
