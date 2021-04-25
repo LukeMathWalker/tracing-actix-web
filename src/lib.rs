@@ -4,6 +4,7 @@
 //! # How to install
 //!
 //! Add `tracing-actix-web` to your dependencies:
+//!
 //! ```toml
 //! [dependencies]
 //! # ...
@@ -18,6 +19,8 @@
 //! - `emit_event_on_error`: emit a [`tracing`] event when request processing fails with an error.
 //!
 //! They are both enabled by default.
+//!
+//! `tracing-actix-web` will release `0.4.0`, going out of beta, as soon as `actix-web` releases a stable `4.0.0`.
 //!
 //! # Getting started
 //!
