@@ -222,6 +222,9 @@
 //!
 //! Check out the [relevant example in the GitHub repository] for reference.
 //!
+//! You can find an alternative integration of `actix-web` with OpenTelemetry in [`actix-web-opentelemetry`](https://github.com/OutThereLabs/actix-web-opentelemetry)
+//! - parts of this project were heavily inspired by their implementation.
+//!
 //! [root span]: crate::RootSpan
 //! [`actix-web`]: https://docs.rs/actix-web/4.0.0-beta.6/actix_web/index.html
 mod middleware;
