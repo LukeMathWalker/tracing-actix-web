@@ -72,11 +72,12 @@ macro_rules! root_span {
                 .match_pattern()
                 .map(Into::into)
                 .unwrap_or_else(|| "default".into());
+            let http_method = $crate::root_span_macro::private::http_method_str($request.method());
             let connection_info = $request.connection_info();
             let request_id = $crate::root_span_macro::private::get_request_id($request);
             let span = $crate::root_span_macro::private::tracing::info_span!(
                 "HTTP request",
-                http.method = %$crate::root_span_macro::private::http_method_str($request.method()),
+                http.method = %http_method,
                 http.route = %http_route,
                 http.flavor = %$crate::root_span_macro::private::http_flavor($request.version()),
                 http.scheme = %$crate::root_span_macro::private::http_scheme(connection_info.scheme()),
@@ -127,11 +128,11 @@ pub mod private {
         let parent_context = opentelemetry::global::get_text_map_propagator(|propagator| {
             propagator.extract(&crate::otel::RequestHeaderCarrier::new(req.headers()))
         });
+        span.set_parent(parent_context);
         // If we have a remote parent span, this will be the parent's trace identifier.
         // If not, it will be the newly generated trace identifier with this request as root span.
-        let trace_id = parent_context.span().span_context().trace_id().to_hex();
+        let trace_id = span.context().span().span_context().trace_id().to_hex();
         span.record("trace_id", &tracing::field::display(trace_id));
-        span.set_parent(parent_context);
     }
 
     #[doc(hidden)]

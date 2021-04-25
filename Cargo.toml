@@ -1,3 +1,6 @@
+[workspace]
+members = [".", "examples/opentelemetry"]
+
 [package]
 name = "tracing-actix-web"
 version = "0.3.0-beta.3"

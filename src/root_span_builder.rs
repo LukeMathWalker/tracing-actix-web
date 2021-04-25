@@ -41,7 +41,7 @@ impl RootSpanBuilder for DefaultRootSpanBuilder {
         match &outcome {
             Ok(response) => {
                 span.record("http.status_code", &response.response().status().as_u16());
-                span.record("otel.status_code", &"ok");
+                span.record("otel.status_code", &"OK");
             }
             Err(error) => {
                 let response_error = error.as_response_error();
@@ -49,9 +49,9 @@ impl RootSpanBuilder for DefaultRootSpanBuilder {
                 span.record("http.status_code", &status_code.as_u16());
 
                 if status_code.is_client_error() {
-                    span.record("otel.status_code", &"ok");
+                    span.record("otel.status_code", &"OK");
                 } else {
-                    span.record("otel.status_code", &"error");
+                    span.record("otel.status_code", &"ERROR");
                 }
             }
         };

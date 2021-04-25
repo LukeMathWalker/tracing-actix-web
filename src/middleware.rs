@@ -1,4 +1,4 @@
-use crate::{DefaultRootSpanBuilder, RootSpan, RootSpanBuilder};
+use crate::{DefaultRootSpanBuilder, RequestId, RootSpan, RootSpanBuilder};
 use actix_web::dev::{Service, ServiceRequest, ServiceResponse, Transform};
 use actix_web::{Error, HttpMessage};
 use futures::future::{ok, Ready};
@@ -124,6 +124,7 @@ where
     }
 
     fn call(&self, req: ServiceRequest) -> Self::Future {
+        req.extensions_mut().insert(RequestId::generate());
         let root_span = RootSpanType::on_request_start(&req);
 
         let root_span_wrapper = RootSpan::new(root_span.clone());

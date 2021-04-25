@@ -140,7 +140,7 @@
 //! let custom_middleware = TracingLogger::<DomainRootSpanBuilder>::new();
 //! ```
 //!
-//! [`root_span!`] is a macro provided by `tracing_actix_web`: it creates a new span by combining all the HTTP properties tracked
+//! [`root_span!`] is a macro provided by `tracing-actix-web`: it creates a new span by combining all the HTTP properties tracked
 //! by [`DefaultRootSpanBuilder`] with the custom ones you specify when calling it (e.g. `client_id` in our example).  
 //!
 //! We need to use a macro because `tracing` requires all the properties attached to a span to be declared upfront, when the span is created.  
@@ -210,9 +210,9 @@
 //!
 //! # OpenTelemetry integration
 //!
-//! `tracing_actix_web` follows [OpenTelemetry's semantic convention](https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/overview.md#spancontext)
+//! `tracing-actix-web` follows [OpenTelemetry's semantic convention](https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/overview.md#spancontext)
 //! for field names.  
-//! Furthermore, if you have not disabled the `opentelemetry_0_13` feature flag, `tracing_actix_web` automatically
+//! Furthermore, if you have not disabled the `opentelemetry_0_13` feature flag, `tracing-actix-web` automatically
 //! performs trace propagation according to the OpenTelemetry standard.
 //! It tries to extract the OpenTelemetry context out of the headers of incoming requests and, when it finds one, it sets
 //! it as the remote context for the current root span.
@@ -223,7 +223,8 @@
 //! Check out the [relevant example in the GitHub repository] for reference.
 //!
 //! You can find an alternative integration of `actix-web` with OpenTelemetry in [`actix-web-opentelemetry`](https://github.com/OutThereLabs/actix-web-opentelemetry)
-//! - parts of this project were heavily inspired by their implementation.
+//! - parts of this project were heavily inspired by their implementation. They provide support for metrics
+//! and instrumentation for the `awc` HTTP client, both out of scope for `tracing-actix-web`.
 //!
 //! [root span]: crate::RootSpan
 //! [`actix-web`]: https://docs.rs/actix-web/4.0.0-beta.6/actix_web/index.html
