@@ -98,10 +98,10 @@ macro_rules! root_span {
             std::mem::drop(connection_info);
 
             #[cfg(feature = "opentelemetry_0_13")]
-            $crate::otel_0_13::set_otel_parent(&$request, &span);
+            $crate::root_span_macro::private::set_otel_parent_0_13(&$request, &span);
 
             #[cfg(feature = "opentelemetry_0_14")]
-            $crate::otel_0_14::set_otel_parent(&$request, &span);
+            $crate::root_span_macro::private::set_otel_parent_0_14(&$request, &span);
 
             span
         }
@@ -120,6 +120,18 @@ pub mod private {
     use std::borrow::Cow;
 
     pub use tracing;
+
+    #[cfg(feature = "opentelemetry_0_13")]
+    #[doc(hidden)]
+    pub fn set_otel_parent_0_13(req: &ServiceRequest, span: &tracing::Span) {
+        crate::otel_0_13::set_otel_parent(req, span);
+    }
+
+    #[cfg(feature = "opentelemetry_0_14")]
+    #[doc(hidden)]
+    pub fn set_otel_parent_0_14(req: &ServiceRequest, span: &tracing::Span) {
+        crate::otel_0_14::set_otel_parent(req, span);
+    }
 
     #[doc(hidden)]
     #[inline]
