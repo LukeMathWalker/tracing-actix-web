@@ -248,3 +248,6 @@ mod otel_0_13;
 
 #[cfg(feature = "opentelemetry_0_14")]
 mod otel_0_14;
+
+#[cfg(feature = "opentelemetry_0_15")]
+mod otel_0_15;
