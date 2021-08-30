@@ -16,6 +16,9 @@ jobs:
   test_without_otel:
     name: Test
     runs-on: ubuntu-latest
+    env:
+      # Fail the build if there are warnings
+      RUSTFLAGS: "-D warnings"
     steps:
       - uses: actions/checkout@v2
       - name: Cache dependencies
@@ -39,6 +42,9 @@ jobs:
   test_with_otel:
     name: Test
     runs-on: ubuntu-latest
+    env:
+      # Fail the build if there are warnings
+      RUSTFLAGS: "-D warnings"
     strategy:
       matrix:
         otel_version:
