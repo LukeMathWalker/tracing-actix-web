@@ -126,7 +126,8 @@ pub mod private {
     #[cfg(any(
         feature = "opentelemetry_0_13",
         feature = "opentelemetry_0_14",
-        feature = "opentelemetry_0_15"
+        feature = "opentelemetry_0_15",
+        feature = "opentelemetry_0_16"
     ))]
     #[doc(hidden)]
     pub fn set_otel_parent(req: &ServiceRequest, span: &tracing::Span) {
