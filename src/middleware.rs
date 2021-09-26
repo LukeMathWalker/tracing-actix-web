@@ -1,10 +1,12 @@
 use crate::{DefaultRootSpanBuilder, RequestId, RootSpan, RootSpanBuilder};
+use actix_web::body::{BodySize, MessageBody};
 use actix_web::dev::{Service, ServiceRequest, ServiceResponse, Transform};
+use actix_web::web::Bytes;
 use actix_web::{Error, HttpMessage, ResponseError};
 use std::future::{ready, Future, Ready};
 use std::pin::Pin;
+use std::task::{Context, Poll};
 use tracing::Span;
-use tracing_futures::Instrument;
 
 /// `TracingLogger` is a middleware to capture structured diagnostic when processing an HTTP request.
 /// Check the crate-level documentation for an in-depth introduction.
@@ -89,10 +91,10 @@ impl<S, B, RootSpan> Transform<S, ServiceRequest> for TracingLogger<RootSpan>
 where
     S: Service<ServiceRequest, Response = ServiceResponse<B>, Error = Error>,
     S::Future: 'static,
-    B: 'static,
-    RootSpan: RootSpanBuilder,
+    B: MessageBody + 'static,
+    RootSpan: RootSpanBuilder + Unpin,
 {
-    type Response = ServiceResponse<B>;
+    type Response = ServiceResponse<StreamSpan<B>>;
     type Error = Error;
     type Transform = TracingLoggerMiddleware<S, RootSpan>;
     type InitError = ();
@@ -117,12 +119,12 @@ impl<S, B, RootSpanType> Service<ServiceRequest> for TracingLoggerMiddleware<S, 
 where
     S: Service<ServiceRequest, Response = ServiceResponse<B>, Error = Error>,
     S::Future: 'static,
-    B: 'static,
-    RootSpanType: RootSpanBuilder,
+    B: MessageBody + 'static,
+    RootSpanType: RootSpanBuilder + Unpin,
 {
-    type Response = ServiceResponse<B>;
+    type Response = ServiceResponse<StreamSpan<B>>;
     type Error = Error;
-    type Future = Pin<Box<dyn Future<Output = Result<Self::Response, Self::Error>>>>;
+    type Future = TracingResponse<S::Future, RootSpanType>;
 
     actix_web::dev::forward_ready!(service);
 
@@ -134,9 +136,49 @@ where
         req.extensions_mut().insert(root_span_wrapper);
 
         let fut = root_span.in_scope(|| self.service.call(req));
-        Box::pin(
-            async move {
-                let outcome = fut.await;
+
+        TracingResponse {
+            fut,
+            span: root_span,
+            _root_span_type: std::marker::PhantomData,
+        }
+    }
+}
+
+#[doc(hidden)]
+#[pin_project::pin_project]
+pub struct TracingResponse<F, RootSpanType> {
+    #[pin]
+    fut: F,
+    span: Span,
+    _root_span_type: std::marker::PhantomData<RootSpanType>,
+}
+
+#[doc(hidden)]
+#[pin_project::pin_project]
+pub struct StreamSpan<B> {
+    #[pin]
+    body: B,
+    span: Span,
+}
+
+impl<F, B, RootSpanType> Future for TracingResponse<F, RootSpanType>
+where
+    F: Future<Output = Result<ServiceResponse<B>, Error>>,
+    B: actix_web::dev::MessageBody + 'static,
+    RootSpanType: RootSpanBuilder + Unpin,
+{
+    type Output = Result<ServiceResponse<StreamSpan<B>>, Error>;
+
+    fn poll(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Self::Output> {
+        let this = self.project();
+
+        let fut = this.fut;
+        let span = this.span;
+
+        span.in_scope(|| match fut.poll(cx) {
+            Poll::Pending => return Poll::Pending,
+            Poll::Ready(outcome) => {
                 RootSpanType::on_request_end(Span::current(), &outcome);
 
                 #[cfg(feature = "emit_event_on_error")]
@@ -144,10 +186,36 @@ where
                     emit_event_on_error(&outcome);
                 }
 
-                outcome
+                Poll::Ready(outcome.map(|service_response| {
+                    service_response.map_body(|_, body| StreamSpan {
+                        body,
+                        span: span.clone(),
+                    })
+                }))
             }
-            .instrument(root_span),
-        )
+        })
+    }
+}
+
+impl<B> MessageBody for StreamSpan<B>
+where
+    B: MessageBody,
+{
+    type Error = B::Error;
+
+    fn size(&self) -> BodySize {
+        self.body.size()
+    }
+
+    fn poll_next(
+        self: Pin<&mut Self>,
+        cx: &mut Context<'_>,
+    ) -> Poll<Option<Result<Bytes, Self::Error>>> {
+        let this = self.project();
+
+        let body = this.body;
+        let span = this.span;
+        span.in_scope(|| body.poll_next(cx))
     }
 }
 
