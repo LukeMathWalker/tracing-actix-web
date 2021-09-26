@@ -177,7 +177,7 @@ where
         let span = this.span;
 
         span.in_scope(|| match fut.poll(cx) {
-            Poll::Pending => return Poll::Pending,
+            Poll::Pending => Poll::Pending,
             Poll::Ready(outcome) => {
                 RootSpanType::on_request_end(Span::current(), &outcome);
 
