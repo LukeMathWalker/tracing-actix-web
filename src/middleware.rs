@@ -92,7 +92,7 @@ where
     S: Service<ServiceRequest, Response = ServiceResponse<B>, Error = Error>,
     S::Future: 'static,
     B: MessageBody + 'static,
-    RootSpan: RootSpanBuilder + Unpin,
+    RootSpan: RootSpanBuilder,
 {
     type Response = ServiceResponse<StreamSpan<B>>;
     type Error = Error;
@@ -120,7 +120,7 @@ where
     S: Service<ServiceRequest, Response = ServiceResponse<B>, Error = Error>,
     S::Future: 'static,
     B: MessageBody + 'static,
-    RootSpanType: RootSpanBuilder + Unpin,
+    RootSpanType: RootSpanBuilder,
 {
     type Response = ServiceResponse<StreamSpan<B>>;
     type Error = Error;
@@ -166,7 +166,7 @@ impl<F, B, RootSpanType> Future for TracingResponse<F, RootSpanType>
 where
     F: Future<Output = Result<ServiceResponse<B>, Error>>,
     B: actix_web::dev::MessageBody + 'static,
-    RootSpanType: RootSpanBuilder + Unpin,
+    RootSpanType: RootSpanBuilder,
 {
     type Output = Result<ServiceResponse<StreamSpan<B>>, Error>;
 
