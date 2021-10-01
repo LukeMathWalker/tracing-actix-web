@@ -19,7 +19,6 @@ use tracing::Span;
 /// In this example we add a [`tracing::Subscriber`] to output structured logs to the console.
 ///
 /// ```rust
-/// use actix_web::middleware::Logger;
 /// use actix_web::App;
 /// use tracing::{Subscriber, subscriber::set_global_default};
 /// use tracing_actix_web::TracingLogger;
@@ -60,8 +59,26 @@ use tracing::Span;
 /// }
 /// ```
 ///
+/// Like [`actix-web`]'s [`Logger`], in order to use `TracingLogger` inside a Scope, Resource, or
+/// Condition, the [`Compat`] middleware must be used.
+///
+/// ```rust
+/// use actix_web::middleware::Compat;
+/// use actix_web::{web, App};
+/// use tracing_actix_web::TracingLogger;
+///
+/// fn main() {
+///     let app = App::new()
+///         .service(
+///             web::scope("/some/route")
+///                 .wrap(Compat::new(TracingLogger::default())),
+///         );
+/// }
+/// ```
+///
 /// [`actix-web`]: https://docs.rs/actix-web
-/// [`Logger`]: https://docs.rs/actix-web/3.0.2/actix_web/middleware/struct.Logger.html
+/// [`Logger`]: https://docs.rs/actix-web/4.0.0-beta.9/actix_web/middleware/struct.Logger.html
+/// [`Compat`]: https://docs.rs/actix-web/4.0.0-beta.9/actix_web/middleware/struct.Compat.html
 /// [`tracing`]: https://docs.rs/tracing
 pub struct TracingLogger<RootSpan: RootSpanBuilder> {
     root_span_builder: std::marker::PhantomData<RootSpan>,
