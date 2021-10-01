@@ -182,7 +182,7 @@ pub struct StreamSpan<B> {
 impl<F, B, RootSpanType> Future for TracingResponse<F, RootSpanType>
 where
     F: Future<Output = Result<ServiceResponse<B>, Error>>,
-    B: actix_web::dev::MessageBody + 'static,
+    B: MessageBody + 'static,
     RootSpanType: RootSpanBuilder,
 {
     type Output = Result<ServiceResponse<StreamSpan<B>>, Error>;
