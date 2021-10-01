@@ -67,13 +67,11 @@ use tracing::Span;
 /// use actix_web::{web, App};
 /// use tracing_actix_web::TracingLogger;
 ///
-/// fn main() {
-///     let app = App::new()
-///         .service(
-///             web::scope("/some/route")
-///                 .wrap(Compat::new(TracingLogger::default())),
-///         );
-/// }
+/// let app = App::new()
+///     .service(
+///         web::scope("/some/route")
+///             .wrap(Compat::new(TracingLogger::default())),
+///     );
 /// ```
 ///
 /// [`actix-web`]: https://docs.rs/actix-web
