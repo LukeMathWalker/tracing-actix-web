@@ -44,8 +44,7 @@ impl RootSpanBuilder for DefaultRootSpanBuilder {
         match &outcome {
             Ok(response) => {
                 if let Some(error) = response.response().error() {
-                    let status_code = response.status();
-                    record_error(span, status_code, error.as_response_error());
+                    record_error(span, response.status(), error.as_response_error());
                 } else {
                     let code: i32 = response.response().status().as_u16().into();
                     span.record("http.status_code", &code);
