@@ -249,7 +249,7 @@ fn emit_event_on_error<B: 'static>(outcome: &Result<ServiceResponse<B>, actix_we
 }
 
 fn emit_error_event(response_error: &dyn ResponseError) {
-    let status_code = response_error.status_code();
+    let status_code = response_error.error_response().status();
     let error_msg_prefix = "Error encountered while processing the incoming HTTP request";
     if status_code.is_client_error() {
         tracing::warn!("{}: {:?}", error_msg_prefix, response_error);
