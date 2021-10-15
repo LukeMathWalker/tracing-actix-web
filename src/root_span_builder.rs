@@ -44,25 +44,23 @@ impl RootSpanBuilder for DefaultRootSpanBuilder {
         match &outcome {
             Ok(response) => {
                 if let Some(error) = response.response().error() {
-                    record_error(span, response.status(), error.as_response_error());
+                    // use the status code already constructed for the outgoing HTTP response
+                    handle_error(span, response.status(), error.as_response_error());
                 } else {
                     let code: i32 = response.response().status().as_u16().into();
                     span.record("http.status_code", &code);
                     span.record("otel.status_code", &"OK");
                 }
             }
-            Err(error) => handle_error(span, error),
+            Err(error) => {
+                let response_error = error.as_response_error();
+                handle_error(span, response_error.status_code(), response_error);
+            }
         };
     }
 }
 
-fn handle_error(span: Span, error: &actix_web::Error) {
-    let response_error = error.as_response_error();
-    let status_code = response_error.status_code();
-    record_error(span, status_code, response_error);
-}
-
-fn record_error(span: Span, status_code: StatusCode, response_error: &dyn ResponseError) {
+fn handle_error(span: Span, status_code: StatusCode, response_error: &dyn ResponseError) {
     // pre-formatting errors is a workaround for https://github.com/tokio-rs/tracing/issues/1565
     let display = format!("{}", response_error);
     let debug = format!("{:?}", response_error);

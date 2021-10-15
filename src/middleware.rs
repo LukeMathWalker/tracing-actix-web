@@ -239,6 +239,7 @@ fn emit_event_on_error<B: 'static>(outcome: &Result<ServiceResponse<B>, actix_we
     match outcome {
         Ok(response) => {
             if let Some(err) = response.response().error() {
+                // use the status code already constructed for the outgoing HTTP response
                 emit_error_event(err.as_response_error(), response.status())
             }
         }
