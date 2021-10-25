@@ -45,5 +45,5 @@ tracing-opentelemetry_0_16_pkg = { package = "tracing-opentelemetry",version = "
 
 [dev-dependencies]
 tracing-subscriber = { version = "0.3.0", features = ["registry", "env-filter"] }
-tracing-bunyan-formatter = "0.1.6"
+tracing-bunyan-formatter = { version = "0.2.7-alpha.0", git = "https://github.com/asonix/tracing-bunyan-formatter" }
 tracing-log = "0.1.1"
