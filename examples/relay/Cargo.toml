@@ -1,0 +1,32 @@
+[package]
+name = "relay"
+version = "0.1.0"
+authors = ["Romain Kelifa <romain.kelifa@gmail.com>"]
+edition = "2018"
+
+license = "MIT/Apache-2.0"
+
+[[bin]]
+name = "facade"
+path = "src/facade.rs"
+
+[[bin]]
+name = "microservice"
+path = "src/microservice.rs"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+actix-web = "=4.0.0-beta.11"
+anyhow = "1"
+prost = "0.8.0"
+serde = { version = "1", features = ["derive"] }
+tokio = { version = "1", features = ["full"] }
+tonic = "0.5.2"
+tracing = "0.1.19"
+tracing-actix-web = { path = "../..", features = ["relay"] }
+tracing-log = "0.1.2"
+tracing-subscriber = { version = "0.3", features = ["registry", "env-filter"] }
+
+[build-dependencies]
+tonic-build = "0.5.2"

@@ -241,6 +241,11 @@ pub use root_span_builder::{DefaultRootSpanBuilder, RootSpanBuilder};
 #[doc(hidden)]
 pub mod root_span_macro;
 
+#[cfg(feature = "relay")]
+mod relay;
+#[cfg(feature = "relay")]
+pub use relay::{interceptor::RelayInterceptor, middleware::Relay, service::RelayService};
+
 #[cfg(any(
     feature = "opentelemetry_0_13",
     feature = "opentelemetry_0_14",

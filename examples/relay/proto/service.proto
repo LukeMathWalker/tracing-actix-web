@@ -1,0 +1,25 @@
+syntax = "proto3";
+
+package users;
+
+enum Gender {
+  FEMALE = 0;
+  MALE = 1;
+}
+
+message Filter {
+  optional Gender gender = 1;
+}
+
+message Users {
+  repeated User users = 1;
+}
+
+message User {
+  string name = 1;
+  Gender gender = 2;
+}
+
+service Protocol {
+  rpc Fetch(Filter) returns (Users) {};
+}

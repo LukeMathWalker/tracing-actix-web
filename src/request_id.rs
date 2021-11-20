@@ -98,3 +98,23 @@ impl std::fmt::Display for RequestIdExtractionError {
 }
 
 impl std::error::Error for RequestIdExtractionError {}
+
+impl<T> std::convert::TryFrom<&hyper::Request<T>> for RequestId {
+    type Error = RequestIdExtractionError;
+
+    fn try_from(value: &hyper::Request<T>) -> Result<Self, Self::Error> {
+        match value
+            .headers()
+            .iter()
+            .find_map(|(key, value)| match key.as_str() {
+                "request_id" => match value.to_str() {
+                    Ok(value) => Uuid::parse_str(value).ok(),
+                    _ => None,
+                },
+                _ => None,
+            }) {
+            Some(value) => Ok(Self(value)),
+            None => Err(RequestIdExtractionError { _priv: () }),
+        }
+    }
+}

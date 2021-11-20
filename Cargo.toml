@@ -1,5 +1,5 @@
 [workspace]
-members = [".", "examples/opentelemetry", "examples/custom-root-span"]
+members = [".", "examples/opentelemetry", "examples/custom-root-span", "./examples/relay"]
 
 [package]
 name = "tracing-actix-web"
@@ -25,9 +25,13 @@ opentelemetry_0_14 = ["opentelemetry_0_14_pkg", "tracing-opentelemetry_0_13_pkg"
 opentelemetry_0_15 = ["opentelemetry_0_15_pkg", "tracing-opentelemetry_0_14_pkg"]
 opentelemetry_0_16 = ["opentelemetry_0_16_pkg", "tracing-opentelemetry_0_16_pkg"]
 emit_event_on_error = []
+relay = ["futures", "http", "hyper", "tokio", "tonic"]
 
 [dependencies]
 actix-web = { version = "=4.0.0-beta.11", default-features = false }
+futures = { version = "0.3", default-features = false, features = ["alloc"], optional = true }
+http = { version = "0.2.5", optional = true }
+hyper = { version = "0.14", optional = true }
 pin-project = "1.0.0"
 tracing = "0.1.19"
 tracing-futures = "0.2.4"
@@ -36,6 +40,8 @@ opentelemetry_0_13_pkg = { package = "opentelemetry", version = "0.13", optional
 opentelemetry_0_14_pkg = { package = "opentelemetry", version = "0.14", optional = true }
 opentelemetry_0_15_pkg = { package = "opentelemetry", version = "0.15", optional = true }
 opentelemetry_0_16_pkg = { package = "opentelemetry", version = "0.16", optional = true }
+tokio = { version = "1.14.0", features = ["rt"], optional = true }
+tonic = { version = "0.5.2", optional = true }
 tracing-opentelemetry_0_12_pkg = { package = "tracing-opentelemetry",version = "0.12", optional = true }
 tracing-opentelemetry_0_13_pkg = { package = "tracing-opentelemetry", version = "0.13", optional = true }
 tracing-opentelemetry_0_14_pkg = { package = "tracing-opentelemetry",version = "0.14", optional = true }
