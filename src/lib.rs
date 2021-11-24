@@ -10,9 +10,9 @@
 //! ```toml
 //! [dependencies]
 //! # ...
-//! tracing-actix-web = "0.5.0-beta.2"
+//! tracing-actix-web = "0.5.0-beta.3"
 //! tracing = "0.1"
-//! actix-web = "4.0.0-beta.11"
+//! actix-web = "4.0.0-beta.12"
 //! ```
 //!
 //! `tracing-actix-web` exposes three feature flags:
