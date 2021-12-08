@@ -1,10 +1,12 @@
-use crate::root_span;
+use crate::{
+    debug_root_span, error_root_span, info_root_span, root_span, trace_root_span, warn_root_span,
+};
 use actix_web::dev::{ServiceRequest, ServiceResponse};
 use actix_web::http::StatusCode;
 use actix_web::{Error, ResponseError};
 use tracing::Span;
 
-/// `RootSpanBuilder` allows you to customise the root span attached by
+/// `RootSpanBuilder` allows you to customize the root span attached by
 /// [`TracingLogger`] to incoming requests.
 ///
 /// [`TracingLogger`]: crate::TracingLogger
@@ -14,6 +16,8 @@ pub trait RootSpanBuilder {
 }
 
 /// The default [`RootSpanBuilder`] for [`TracingLogger`].
+///
+/// It logs all captures at the info level.
 ///
 /// It captures:
 /// - HTTP method (`http.method`);
@@ -57,6 +61,126 @@ impl RootSpanBuilder for DefaultRootSpanBuilder {
                 handle_error(span, response_error.status_code(), response_error);
             }
         };
+    }
+}
+
+/// A [`RootSpanBuilder`] for [`TracingLogger`] that logs at the trace level.
+///
+/// Besides the log level, this span builder is equivalent to [`DefaultRootSpanBuilder`].
+///
+/// To use this span builder, use it as the type argument to [`TracingLogger`].
+///
+/// ```rust
+/// # use tracing_actix_web::{TracingLogger, TraceRootSpanBuilder};
+/// let logger = TracingLogger::<TraceRootSpanBuilder>::new();
+/// ```
+///
+/// [`TracingLogger`]: crate::TracingLogger
+pub struct TraceRootSpanBuilder;
+
+impl RootSpanBuilder for TraceRootSpanBuilder {
+    fn on_request_start(request: &ServiceRequest) -> Span {
+        trace_root_span!(request)
+    }
+
+    fn on_request_end<B>(span: Span, outcome: &Result<ServiceResponse<B>, Error>) {
+        DefaultRootSpanBuilder::on_request_end(span, outcome)
+    }
+}
+
+/// A [`RootSpanBuilder`] for [`TracingLogger`] that logs at the debug level.
+///
+/// Besides the log level, this span builder is equivalent to [`DefaultRootSpanBuilder`].
+///
+/// To use this span builder, use it as the type argument to [`TracingLogger`].
+///
+/// ```rust
+/// # use tracing_actix_web::{TracingLogger, DebugRootSpanBuilder};
+/// let logger = TracingLogger::<DebugRootSpanBuilder>::new();
+/// ```
+///
+/// [`TracingLogger`]: crate::TracingLogger
+pub struct DebugRootSpanBuilder;
+
+impl RootSpanBuilder for DebugRootSpanBuilder {
+    fn on_request_start(request: &ServiceRequest) -> Span {
+        debug_root_span!(request)
+    }
+
+    fn on_request_end<B>(span: Span, outcome: &Result<ServiceResponse<B>, Error>) {
+        DefaultRootSpanBuilder::on_request_end(span, outcome)
+    }
+}
+
+/// A [`RootSpanBuilder`] for [`TracingLogger`] that logs at the info level.
+///
+/// Besides the log level, this span builder is equivalent to [`DefaultRootSpanBuilder`].
+///
+/// To use this span builder, use it as the type argument to [`TracingLogger`].
+///
+/// ```rust
+/// # use tracing_actix_web::{TracingLogger, InfoRootSpanBuilder};
+/// let logger = TracingLogger::<InfoRootSpanBuilder>::new();
+/// ```
+///
+/// [`TracingLogger`]: crate::TracingLogger
+pub struct InfoRootSpanBuilder;
+
+impl RootSpanBuilder for InfoRootSpanBuilder {
+    fn on_request_start(request: &ServiceRequest) -> Span {
+        info_root_span!(request)
+    }
+
+    fn on_request_end<B>(span: Span, outcome: &Result<ServiceResponse<B>, Error>) {
+        DefaultRootSpanBuilder::on_request_end(span, outcome)
+    }
+}
+
+/// A [`RootSpanBuilder`] for [`TracingLogger`] that logs at the warn level.
+///
+/// Besides the log level, this span builder is equivalent to [`DefaultRootSpanBuilder`].
+///
+/// To use this span builder, use it as the type argument to [`TracingLogger`].
+///
+/// ```rust
+/// # use tracing_actix_web::{TracingLogger, WarnRootSpanBuilder};
+/// let logger = TracingLogger::<WarnRootSpanBuilder>::new();
+/// ```
+///
+/// [`TracingLogger`]: crate::TracingLogger
+pub struct WarnRootSpanBuilder;
+
+impl RootSpanBuilder for WarnRootSpanBuilder {
+    fn on_request_start(request: &ServiceRequest) -> Span {
+        warn_root_span!(request)
+    }
+
+    fn on_request_end<B>(span: Span, outcome: &Result<ServiceResponse<B>, Error>) {
+        DefaultRootSpanBuilder::on_request_end(span, outcome)
+    }
+}
+
+/// A [`RootSpanBuilder`] for [`TracingLogger`] that logs at the error level.
+///
+/// Besides the log level, this span builder is equivalent to [`DefaultRootSpanBuilder`].
+///
+/// To use this span builder, use it as the type argument to [`TracingLogger`].
+///
+/// ```rust
+/// # use tracing_actix_web::{TracingLogger, ErrorRootSpanBuilder};
+/// let logger = TracingLogger::<ErrorRootSpanBuilder>::new();
+/// ```
+///
+/// [`TracingLogger`]: crate::TracingLogger
+pub struct ErrorRootSpanBuilder;
+
+impl RootSpanBuilder for ErrorRootSpanBuilder {
+    fn on_request_start(request: &ServiceRequest) -> Span {
+        error_root_span!(request)
+    }
+
+    fn on_request_end<B>(span: Span, outcome: &Result<ServiceResponse<B>, Error>) {
+        DefaultRootSpanBuilder::on_request_end(span, outcome)
     }
 }
 

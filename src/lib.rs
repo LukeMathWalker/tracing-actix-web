@@ -243,7 +243,10 @@ mod root_span_builder;
 pub use middleware::TracingLogger;
 pub use request_id::RequestId;
 pub use root_span::RootSpan;
-pub use root_span_builder::{DefaultRootSpanBuilder, RootSpanBuilder};
+pub use root_span_builder::{
+    DebugRootSpanBuilder, DefaultRootSpanBuilder, ErrorRootSpanBuilder, InfoRootSpanBuilder,
+    RootSpanBuilder, TraceRootSpanBuilder, WarnRootSpanBuilder,
+};
 
 #[doc(hidden)]
 pub mod root_span_macro;
