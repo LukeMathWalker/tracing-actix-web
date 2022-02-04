@@ -37,9 +37,9 @@ Add `tracing-actix-web` to your dependencies:
 ```toml
 [dependencies]
 # ...
-tracing-actix-web = "=0.5.0-rc.1"
+tracing-actix-web = "=0.5.0-rc.2"
 tracing = "0.1"
-actix-web = "=4.0.0-rc.1"
+actix-web = "=4.0.0-rc.2"
 ```
 
 `tracing-actix-web` exposes three feature flags:
@@ -48,6 +48,7 @@ actix-web = "=4.0.0-rc.1"
 - `opentelemetry_0_14`: same as above but using `opentelemetry` 0.14;
 - `opentelemetry_0_15`: same as above but using `opentelemetry` 0.15;
 - `opentelemetry_0_16`: same as above but using `opentelemetry` 0.16;
+- `opentelemetry_0_17`: same as above but using `opentelemetry` 0.17;
 - `emit_event_on_error`: emit a [`tracing`] event when request processing fails with an error (enabled by default).
 
 `tracing-actix-web` will release `0.5.0`, going out of beta, as soon as `actix-web` releases a stable `4.0.0`.
