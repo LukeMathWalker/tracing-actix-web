@@ -257,10 +257,10 @@ To fulfill a request you often have to perform additional I/O operations - e.g. 
 `tracing-actix-web` provides support for distributed tracing by supporting the [OpenTelemetry standard](https://opentelemetry.io/).  
 `tracing-actix-web` follows [OpenTelemetry's semantic convention](https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/overview.md#spancontext)
 for field names.  
-Furthermore, it provides an `opentelemetry_0_16` feature flag to automatically performs trace propagation: it tries to extract the OpenTelemetry context out of the headers of incoming requests and, when it finds one, it sets it as the remote context for the current root span. The context is then propagated to your downstream dependencies if your HTTP or gRPC clients are OpenTelemetry-aware - e.g. using [`reqwest-middleware` and `reqwest-tracing`](https://github.com/TrueLayer/reqwest-middleware) if you are using `reqwest` as your HTTP client.  
+Furthermore, it provides an `opentelemetry_0_17` feature flag to automatically performs trace propagation: it tries to extract the OpenTelemetry context out of the headers of incoming requests and, when it finds one, it sets it as the remote context for the current root span. The context is then propagated to your downstream dependencies if your HTTP or gRPC clients are OpenTelemetry-aware - e.g. using [`reqwest-middleware` and `reqwest-tracing`](https://github.com/TrueLayer/reqwest-middleware) if you are using `reqwest` as your HTTP client.  
 You can then find all logs for the same request across all the services it touched by looking for the `trace_id`, automatically logged by `tracing-actix-web`.
 
-If you add [`tracing-opentelemetry::OpenTelemetryLayer`](https://docs.rs/tracing-opentelemetry/0.16.0/tracing_opentelemetry/struct.OpenTelemetryLayer.html)
+If you add [`tracing-opentelemetry::OpenTelemetryLayer`](https://docs.rs/tracing-opentelemetry/0.17.0/tracing_opentelemetry/struct.OpenTelemetryLayer.html)
 in your `tracing::Subscriber` you will be able to export the root span (and all its children) as OpenTelemetry spans.
 
 Check out the [relevant example in the GitHub repository](https://github.com/LukeMathWalker/tracing-actix-web/tree/main/examples/opentelemetry) for reference.
