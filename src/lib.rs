@@ -244,6 +244,8 @@ pub use middleware::TracingLogger;
 pub use request_id::RequestId;
 pub use root_span::RootSpan;
 pub use root_span_builder::{DefaultRootSpanBuilder, RootSpanBuilder};
+// Re-exporting the `Level` enum since it's used in our `root_span!` macro
+pub use tracing::Level;
 
 #[doc(hidden)]
 pub mod root_span_macro;
