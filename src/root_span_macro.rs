@@ -81,6 +81,11 @@ macro_rules! root_span {
                 .get("User-Agent")
                 .map(|h| h.to_str().unwrap_or(""))
                 .unwrap_or("");
+            let referer = $request
+                .headers()
+                .get("Referer")
+                .map(|h| h.to_str().unwrap_or(""))
+                .unwrap_or("");
             let http_route: std::borrow::Cow<'static, str> = $request
                 .match_pattern()
                 .map(Into::into)
@@ -101,6 +106,7 @@ macro_rules! root_span {
                         http.host = %connection_info.host(),
                         http.client_ip = %$request.connection_info().realip_remote_addr().unwrap_or(""),
                         http.user_agent = %user_agent,
+                        http.referer = %referer,
                         http.target = %$request.uri().path_and_query().map(|p| p.as_str()).unwrap_or(""),
                         http.status_code = $crate::root_span_macro::private::tracing::field::Empty,
                         otel.name = %format!("HTTP {} {}", http_method, http_route),
@@ -216,6 +222,6 @@ pub mod private {
     pub fn get_request_id(request: &ServiceRequest) -> RequestId {
         use actix_web::HttpMessage;
 
-        request.extensions().get::<RequestId>().cloned().unwrap()
+        request.extensions().get::<RequestId>().copied().unwrap()
     }
 }

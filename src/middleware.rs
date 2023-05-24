@@ -16,7 +16,7 @@ use tracing::Span;
 ///
 /// # Usage
 ///
-/// Register `TracingLogger` as a middleware for your application using `.wrap` on `App`.  
+/// Register `TracingLogger` as a middleware for your application using `.wrap` on `App`.
 /// In this example we add a [`tracing::Subscriber`] to output structured logs to the console.
 ///
 /// ```rust
@@ -119,7 +119,7 @@ where
     fn new_transform(&self, service: S) -> Self::Future {
         ready(Ok(TracingLoggerMiddleware {
             service,
-            root_span_builder: std::marker::PhantomData::default(),
+            root_span_builder: std::marker::PhantomData,
         }))
     }
 }
@@ -240,12 +240,12 @@ fn emit_event_on_error<B: 'static>(outcome: &Result<ServiceResponse<B>, actix_we
         Ok(response) => {
             if let Some(err) = response.response().error() {
                 // use the status code already constructed for the outgoing HTTP response
-                emit_error_event(err.as_response_error(), response.status())
+                emit_error_event(err.as_response_error(), response.status());
             }
         }
         Err(error) => {
             let response_error = error.as_response_error();
-            emit_error_event(response_error, response_error.status_code())
+            emit_error_event(response_error, response_error.status_code());
         }
     }
 }
