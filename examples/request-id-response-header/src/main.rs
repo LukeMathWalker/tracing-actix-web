@@ -1,11 +1,10 @@
 use actix_web::{
     dev::Service,
-    web, App, HttpServer,
     http::header::{HeaderName, HeaderValue},
-    HttpMessage,
+    web, App, HttpMessage, HttpServer,
 };
 use std::io;
-use tracing_actix_web::{TracingLogger, RequestId};
+use tracing_actix_web::{RequestId, TracingLogger};
 
 async fn hello() -> &'static str {
     "Hello world!"
