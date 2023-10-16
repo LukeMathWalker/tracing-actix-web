@@ -39,7 +39,7 @@ impl RequestId {
         {
             Self(Uuid::new_v4())
         }
-        #[cfg(feature = "uuid_v7")]
+        #[cfg(all(uuid_unstable, feature = "uuid_v7"))]
         {
             Self(Uuid::now_v7())
         }
