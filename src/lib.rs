@@ -387,6 +387,3 @@ compile_error!("feature \"opentelemetry_0_18\" and feature \"opentelemetry_0_20\
 
 #[cfg(all(feature = "opentelemetry_0_19", feature = "opentelemetry_0_20"))]
 compile_error!("feature \"opentelemetry_0_19\" and feature \"opentelemetry_0_20\" cannot be enabled at the same time");
-
-#[cfg(all(feature = "uuid_v7", not(uuid_unstable)))]
-compile_error!("feature \"uuid_v7\" requires \"uuid_unstable\" to be passed as configuration in rustflags");

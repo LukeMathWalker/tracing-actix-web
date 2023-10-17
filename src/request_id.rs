@@ -35,6 +35,11 @@ pub struct RequestId(Uuid);
 
 impl RequestId {
     pub(crate) fn generate() -> Self {
+
+        // Compiler error for providing context on requirements to enable the `uuid_v7` feature flag
+        #[cfg(all(feature = "uuid_v7", not(uuid_unstable)))]
+        compile_error!("feature \"uuid_v7\" requires \"uuid_unstable\" to be passed as configuration in rustflags");
+
         #[cfg(not(feature = "uuid_v7"))]
         {
             Self(Uuid::new_v4())
