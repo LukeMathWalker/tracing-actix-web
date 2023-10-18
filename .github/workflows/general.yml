@@ -81,8 +81,8 @@ jobs:
     name: Test
     runs-on: ubuntu-latest
     env:
-      # Fail the build if there are warnings
       RUSTFLAGS: "--cfg uuid_unstable"
+      RUSTDOCFLAGS: "--cfg uuid_unstable"
     steps:
       - uses: actions/checkout@v2
       - name: Cache dependencies
