@@ -27,6 +27,7 @@
 //! - `opentelemetry_0_18`: same as above but using `opentelemetry` 0.18;
 //! - `opentelemetry_0_19`: same as above but using `opentelemetry` 0.19;
 //! - `opentelemetry_0_20`: same as above but using `opentelemetry` 0.20;
+//! - `opentelemetry_0_21`: same as above but using `opentelemetry` 0.21;
 //! - `emit_event_on_error`: emit a [`tracing`] event when request processing fails with an error (enabled by default).
 //! - `uuid_v7`: use the UUID v7 implementation inside [`RequestId`] instead of UUID v4 (disabled by default).
 //!
@@ -300,7 +301,8 @@ pub mod root_span_macro;
     feature = "opentelemetry_0_17",
     feature = "opentelemetry_0_18",
     feature = "opentelemetry_0_19",
-    feature = "opentelemetry_0_20"
+    feature = "opentelemetry_0_20",
+    feature = "opentelemetry_0_21"
 ))]
 mod otel;
 
@@ -325,6 +327,9 @@ compile_error!("feature \"opentelemetry_0_13\" and feature \"opentelemetry_0_19\
 #[cfg(all(feature = "opentelemetry_0_13", feature = "opentelemetry_0_20"))]
 compile_error!("feature \"opentelemetry_0_13\" and feature \"opentelemetry_0_20\" cannot be enabled at the same time");
 
+#[cfg(all(feature = "opentelemetry_0_13", feature = "opentelemetry_0_21"))]
+compile_error!("feature \"opentelemetry_0_13\" and feature \"opentelemetry_0_21\" cannot be enabled at the same time");
+
 #[cfg(all(feature = "opentelemetry_0_14", feature = "opentelemetry_0_15"))]
 compile_error!("feature \"opentelemetry_0_14\" and feature \"opentelemetry_0_15\" cannot be enabled at the same time");
 
@@ -343,6 +348,9 @@ compile_error!("feature \"opentelemetry_0_14\" and feature \"opentelemetry_0_19\
 #[cfg(all(feature = "opentelemetry_0_14", feature = "opentelemetry_0_20"))]
 compile_error!("feature \"opentelemetry_0_14\" and feature \"opentelemetry_0_20\" cannot be enabled at the same time");
 
+#[cfg(all(feature = "opentelemetry_0_14", feature = "opentelemetry_0_21"))]
+compile_error!("feature \"opentelemetry_0_14\" and feature \"opentelemetry_0_21\" cannot be enabled at the same time");
+
 #[cfg(all(feature = "opentelemetry_0_15", feature = "opentelemetry_0_16"))]
 compile_error!("feature \"opentelemetry_0_15\" and feature \"opentelemetry_0_16\" cannot be enabled at the same time");
 
@@ -358,6 +366,9 @@ compile_error!("feature \"opentelemetry_0_15\" and feature \"opentelemetry_0_19\
 #[cfg(all(feature = "opentelemetry_0_15", feature = "opentelemetry_0_20"))]
 compile_error!("feature \"opentelemetry_0_15\" and feature \"opentelemetry_0_20\" cannot be enabled at the same time");
 
+#[cfg(all(feature = "opentelemetry_0_15", feature = "opentelemetry_0_21"))]
+compile_error!("feature \"opentelemetry_0_15\" and feature \"opentelemetry_0_21\" cannot be enabled at the same time");
+
 #[cfg(all(feature = "opentelemetry_0_16", feature = "opentelemetry_0_17"))]
 compile_error!("feature \"opentelemetry_0_16\" and feature \"opentelemetry_0_17\" cannot be enabled at the same time");
 
@@ -370,6 +381,9 @@ compile_error!("feature \"opentelemetry_0_16\" and feature \"opentelemetry_0_19\
 #[cfg(all(feature = "opentelemetry_0_16", feature = "opentelemetry_0_20"))]
 compile_error!("feature \"opentelemetry_0_16\" and feature \"opentelemetry_0_20\" cannot be enabled at the same time");
 
+#[cfg(all(feature = "opentelemetry_0_16", feature = "opentelemetry_0_21"))]
+compile_error!("feature \"opentelemetry_0_16\" and feature \"opentelemetry_0_21\" cannot be enabled at the same time");
+
 #[cfg(all(feature = "opentelemetry_0_17", feature = "opentelemetry_0_18"))]
 compile_error!("feature \"opentelemetry_0_17\" and feature \"opentelemetry_0_18\" cannot be enabled at the same time");
 
@@ -379,11 +393,23 @@ compile_error!("feature \"opentelemetry_0_17\" and feature \"opentelemetry_0_19\
 #[cfg(all(feature = "opentelemetry_0_17", feature = "opentelemetry_0_20"))]
 compile_error!("feature \"opentelemetry_0_17\" and feature \"opentelemetry_0_20\" cannot be enabled at the same time");
 
+#[cfg(all(feature = "opentelemetry_0_17", feature = "opentelemetry_0_21"))]
+compile_error!("feature \"opentelemetry_0_17\" and feature \"opentelemetry_0_21\" cannot be enabled at the same time");
+
 #[cfg(all(feature = "opentelemetry_0_18", feature = "opentelemetry_0_19"))]
 compile_error!("feature \"opentelemetry_0_18\" and feature \"opentelemetry_0_19\" cannot be enabled at the same time");
 
 #[cfg(all(feature = "opentelemetry_0_18", feature = "opentelemetry_0_20"))]
 compile_error!("feature \"opentelemetry_0_18\" and feature \"opentelemetry_0_20\" cannot be enabled at the same time");
 
+#[cfg(all(feature = "opentelemetry_0_18", feature = "opentelemetry_0_21"))]
+compile_error!("feature \"opentelemetry_0_18\" and feature \"opentelemetry_0_21\" cannot be enabled at the same time");
+
 #[cfg(all(feature = "opentelemetry_0_19", feature = "opentelemetry_0_20"))]
 compile_error!("feature \"opentelemetry_0_19\" and feature \"opentelemetry_0_20\" cannot be enabled at the same time");
+
+#[cfg(all(feature = "opentelemetry_0_19", feature = "opentelemetry_0_21"))]
+compile_error!("feature \"opentelemetry_0_19\" and feature \"opentelemetry_0_21\" cannot be enabled at the same time");
+
+#[cfg(all(feature = "opentelemetry_0_20", feature = "opentelemetry_0_21"))]
+compile_error!("feature \"opentelemetry_0_20\" and feature \"opentelemetry_0_21\" cannot be enabled at the same time");
