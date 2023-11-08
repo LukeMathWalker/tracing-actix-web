@@ -75,7 +75,7 @@ pub(crate) fn set_otel_parent(req: &ServiceRequest, span: &tracing::Span) {
         feature = "opentelemetry_0_18",
         feature = "opentelemetry_0_19",
         feature = "opentelemetry_0_20",
-        feature = "opentelemetry_0_21"
+        feature = "opentelemetry_0_21",
     )))]
     let trace_id = span.context().span().span_context().trace_id().to_hex();
 
@@ -84,7 +84,7 @@ pub(crate) fn set_otel_parent(req: &ServiceRequest, span: &tracing::Span) {
         feature = "opentelemetry_0_18",
         feature = "opentelemetry_0_19",
         feature = "opentelemetry_0_20",
-        feature = "opentelemetry_0_21"
+        feature = "opentelemetry_0_21",
     ))]
     let trace_id = {
         let id = span.context().span().span_context().trace_id();

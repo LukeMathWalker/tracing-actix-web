@@ -302,7 +302,7 @@ pub mod root_span_macro;
     feature = "opentelemetry_0_18",
     feature = "opentelemetry_0_19",
     feature = "opentelemetry_0_20",
-    feature = "opentelemetry_0_21"
+    feature = "opentelemetry_0_21",
 ))]
 mod otel;
 
