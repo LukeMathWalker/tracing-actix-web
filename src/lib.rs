@@ -293,6 +293,18 @@ pub use tracing::Level;
 #[doc(hidden)]
 pub mod root_span_macro;
 
+mutually_exclusive_features::none_or_one_of!(
+    "opentelemetry_0_13",
+    "opentelemetry_0_14",
+    "opentelemetry_0_15",
+    "opentelemetry_0_16",
+    "opentelemetry_0_17",
+    "opentelemetry_0_18",
+    "opentelemetry_0_19",
+    "opentelemetry_0_20",
+    "opentelemetry_0_21",
+);
+
 #[cfg(any(
     feature = "opentelemetry_0_13",
     feature = "opentelemetry_0_14",
@@ -305,35 +317,3 @@ pub mod root_span_macro;
     feature = "opentelemetry_0_21",
 ))]
 mod otel;
-
-const _OTEL_GUARD: () = assert!({
-    let mut enabled_count = 0;
-    if cfg!(feature = "opentelemetry_0_13") {
-        enabled_count += 1;
-    }
-    if cfg!(feature = "opentelemetry_0_14") {
-        enabled_count += 1;
-    }
-    if cfg!(feature = "opentelemetry_0_15") {
-        enabled_count += 1;
-    }
-    if cfg!(feature = "opentelemetry_0_16") {
-        enabled_count += 1;
-    }
-    if cfg!(feature = "opentelemetry_0_17") {
-        enabled_count += 1;
-    }
-    if cfg!(feature = "opentelemetry_0_18") {
-        enabled_count += 1;
-    }
-    if cfg!(feature = "opentelemetry_0_19") {
-        enabled_count += 1;
-    }
-    if cfg!(feature = "opentelemetry_0_20") {
-        enabled_count += 1;
-    }
-    if cfg!(feature = "opentelemetry_0_21") {
-        enabled_count += 1;
-    }
-    enabled_count <= 1
-}, "Only one `opentelemetry_*` feature can be enabled at the same time.");
