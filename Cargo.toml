@@ -37,7 +37,7 @@ actix-web = { version = "4", default-features = false }
 pin-project = "1.0.0"
 tracing = "0.1.36"
 uuid = { version = "1", features = ["v4"] }
-mutually_exclusive_features = "0.0.3"
+mutually_exclusive_features = "0.1"
 opentelemetry_0_13_pkg = { package = "opentelemetry", version = "0.13", optional = true }
 opentelemetry_0_14_pkg = { package = "opentelemetry", version = "0.14", optional = true }
 opentelemetry_0_15_pkg = { package = "opentelemetry", version = "0.15", optional = true }
@@ -59,6 +59,3 @@ tracing-opentelemetry_0_22_pkg = { package = "tracing-opentelemetry",version = "
 
 [dev-dependencies]
 actix-web = { version = "4", default-features = false, features = ["macros"] }
-tracing-subscriber = { version = "0.3.0", features = ["registry", "env-filter"] }
-tracing-bunyan-formatter = "0.3.0"
-tracing-log = "0.1.1"

@@ -63,7 +63,7 @@ async fn main() -> io::Result<()> {
     .await?;
 
     // Ensure all spans have been shipped to Jaeger.
-    opentelemetry::global::shutdown_tracer_provider();
+    global::shutdown_tracer_provider();
 
     Ok(())
 }
@@ -83,7 +83,7 @@ fn init_telemetry() {
 
     let env_filter = EnvFilter::try_from_default_env().unwrap_or(EnvFilter::new("info"));
     let telemetry = tracing_opentelemetry::layer().with_tracer(tracer);
-    let formatting_layer = BunyanFormattingLayer::new(app_name.into(), std::io::stdout);
+    let formatting_layer = BunyanFormattingLayer::new(app_name.into(), io::stdout);
     let subscriber = Registry::default()
         .with(env_filter)
         .with(telemetry)
