@@ -14,4 +14,4 @@ opentelemetry-jaeger = { version = "0.21", features = ["rt-tokio-current-thread"
 tracing-opentelemetry = { version = "0.23" }
 tracing-subscriber = { version = "0.3", features = ["registry", "env-filter"] }
 tracing-bunyan-formatter = "0.3"
-tracing-actix-web = { path = "../..", features = ["opentelemetry_0_19"] }
+tracing-actix-web = { path = "../..", features = ["opentelemetry_0_22"] }
