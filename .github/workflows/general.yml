@@ -57,6 +57,7 @@ jobs:
           - opentelemetry_0_19
           - opentelemetry_0_20
           - opentelemetry_0_21
+          - opentelemetry_0_22
     steps:
       - uses: actions/checkout@v4
       - name: Cache dependencies
@@ -81,9 +82,6 @@ jobs:
   test_uuid_v7:
     name: Test
     runs-on: ubuntu-latest
-    env:
-      RUSTFLAGS: "--cfg uuid_unstable"
-      RUSTDOCFLAGS: "--cfg uuid_unstable"
     steps:
       - uses: actions/checkout@v4
       - name: Cache dependencies

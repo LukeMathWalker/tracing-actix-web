@@ -55,6 +55,7 @@ actix-web = "4"
 - `opentelemetry_0_19`: same as above but using `opentelemetry` 0.19;
 - `opentelemetry_0_20`: same as above but using `opentelemetry` 0.20;
 - `opentelemetry_0_21`: same as above but using `opentelemetry` 0.21;
+- `opentelemetry_0_22`: same as above but using `opentelemetry` 0.22;
 - `emit_event_on_error`: emit a [`tracing`] event when request processing fails with an error (enabled by default).
 - `uuid_v7`: use the UUID v7 implementation inside [`RequestId`] instead of UUID v4 (disabled by default).
 ## Quickstart
@@ -288,8 +289,6 @@ If you need to **trace** a request across multiple services (e.g. in a microserv
 
 
 Optionally, using the `uuid_v7` feature flag will allow [`RequestId`] to use UUID v7 instead of the currently used UUID v4.
-
-However, the [`uuid`] crate requires a compile time flag `uuid_unstable` to be passed in `RUSTFLAGS="--cfg uuid_unstable"` in order to compile. You can read more about it [here](https://docs.rs/uuid/latest/uuid/#unstable-features).
 
 ## Trace Id
 
