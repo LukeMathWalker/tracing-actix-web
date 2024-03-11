@@ -29,7 +29,7 @@ fn init_telemetry() {
     // Create a `tracing` layer using the Jaeger tracer
     let telemetry = tracing_opentelemetry::layer().with_tracer(tracer);
     // Create a `tracing` layer to emit spans as structured logs to stdout
-    let formatting_layer = BunyanFormattingLayer::new(app_name.into(), std::io::stdout);
+    let formatting_layer = BunyanFormattingLayer::new(app_name.into(), io::stdout);
     // Combined them all together in a `tracing` subscriber
     let subscriber = Registry::default()
         .with(env_filter)
@@ -54,7 +54,7 @@ async fn main() -> io::Result<()> {
     .await?;
 
     // Ensure all spans have been shipped to Jaeger.
-    opentelemetry::global::shutdown_tracer_provider();
+    global::shutdown_tracer_provider();
 
     Ok(())
 }

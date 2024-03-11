@@ -1,4 +1,5 @@
 use actix_web::dev::ServiceRequest;
+use actix_web::http::header::HeaderName;
 
 #[cfg(feature = "opentelemetry_0_13")]
 use opentelemetry_0_13_pkg as opentelemetry;
@@ -60,7 +61,7 @@ impl<'a> Extractor for RequestHeaderCarrier<'a> {
     }
 
     fn keys(&self) -> Vec<&str> {
-        self.headers.keys().map(|header| header.as_str()).collect()
+        self.headers.keys().map(HeaderName::as_str).collect()
     }
 }
 
@@ -94,7 +95,7 @@ pub(crate) fn set_otel_parent(req: &ServiceRequest, span: &tracing::Span) {
     ))]
     let trace_id = {
         let id = span.context().span().span_context().trace_id();
-        format!("{:032x}", id)
+        format!("{id:032x}")
     };
 
     span.record("trace_id", &tracing::field::display(trace_id));
