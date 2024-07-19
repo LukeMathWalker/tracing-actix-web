@@ -1,25 +1,39 @@
 use actix_web::{web, App, HttpServer};
-use opentelemetry::{
-    global, runtime::TokioCurrentThread, sdk::propagation::TraceContextPropagator,
+use once_cell::sync::Lazy;
+use opentelemetry::{global, KeyValue};
+use opentelemetry_sdk::{
+    propagation::TraceContextPropagator, runtime::TokioCurrentThread, trace::Config, Resource,
 };
 use std::io;
 use tracing_actix_web::TracingLogger;
 use tracing_bunyan_formatter::{BunyanFormattingLayer, JsonStorageLayer};
-use tracing_subscriber::layer::SubscriberExt;
-use tracing_subscriber::{EnvFilter, Registry};
+use tracing_subscriber::{layer::SubscriberExt, EnvFilter, Registry};
+
+const APP_NAME: &str = "tracing-actix-web-demo";
+
+static RESOURCE: Lazy<Resource> = Lazy::new(|| {
+    Resource::new(vec![KeyValue::new(
+        opentelemetry_semantic_conventions::resource::SERVICE_NAME,
+        APP_NAME,
+    )])
+});
 
 async fn hello() -> &'static str {
     "Hello world!"
 }
 
 fn init_telemetry() {
-    let app_name = "tracing-actix-web-demo";
-
     // Start a new otlp trace pipeline.
     // Spans are exported in batch - recommended setup for a production application.
     global::set_text_map_propagator(TraceContextPropagator::new());
-    let tracer = opentelemetry_otlp::new_agent_pipeline()
-        .with_service_name(app_name)
+    let tracer = opentelemetry_otlp::new_pipeline()
+        .tracing()
+        .with_exporter(
+            opentelemetry_otlp::new_exporter()
+                .tonic()
+                .with_endpoint("http://127.0.0.1:4317"),
+        )
+        .with_trace_config(Config::default().with_resource(RESOURCE.clone()))
         .install_batch(TokioCurrentThread)
         .expect("Failed to install OpenTelemetry tracer.");
 
@@ -29,7 +43,7 @@ fn init_telemetry() {
     // Create a `tracing` layer using the otlp tracer
     let telemetry = tracing_opentelemetry::layer().with_tracer(tracer);
     // Create a `tracing` layer to emit spans as structured logs to stdout
-    let formatting_layer = BunyanFormattingLayer::new(app_name.into(), std::io::stdout);
+    let formatting_layer = BunyanFormattingLayer::new(APP_NAME.into(), std::io::stdout);
     // Combined them all together in a `tracing` subscriber
     let subscriber = Registry::default()
         .with(env_filter)
