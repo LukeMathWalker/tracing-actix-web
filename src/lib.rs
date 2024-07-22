@@ -306,6 +306,7 @@ mutually_exclusive_features::none_or_one_of!(
     "opentelemetry_0_21",
     "opentelemetry_0_22",
     "opentelemetry_0_23",
+    "opentelemetry_0_24",
 );
 
 #[cfg(any(
@@ -320,5 +321,6 @@ mutually_exclusive_features::none_or_one_of!(
     feature = "opentelemetry_0_21",
     feature = "opentelemetry_0_22",
     feature = "opentelemetry_0_23",
+    feature = "opentelemetry_0_24",
 ))]
 mod otel;

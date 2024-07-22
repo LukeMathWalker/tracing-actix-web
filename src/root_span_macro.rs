@@ -1,5 +1,5 @@
 #[macro_export]
-/// [`root_span!`] creates a new [`tracing::Span`].
+/// `root_span!` creates a new [`tracing::Span`].
 /// It empowers you to add custom properties to the root span on top of the HTTP properties tracked
 /// by [`DefaultRootSpanBuilder`].
 ///
