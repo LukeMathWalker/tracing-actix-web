@@ -43,7 +43,6 @@ fn init_telemetry() {
     let env_filter = EnvFilter::try_from_default_env().unwrap_or(EnvFilter::new("info"));
     // Create a `tracing` layer using the otlp tracer
     let telemetry = tracing_opentelemetry::layer().with_tracer(tracer);
-    // tracing_subscriber::registry().with(telemetry).try_init()?;
     // Create a `tracing` layer to emit spans as structured logs to stdout
     let formatting_layer = BunyanFormattingLayer::new(APP_NAME.into(), std::io::stdout);
     // Combined them all together in a `tracing` subscriber
