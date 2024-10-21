@@ -10,7 +10,7 @@ members = [
 name = "tracing-actix-web"
 version = "0.7.14"
 authors = ["Luca Palmieri <rust@lpalmieri.com>"]
-edition = "2018"
+edition = "2021"
 
 license = "MIT/Apache-2.0"
 

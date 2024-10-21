@@ -16,7 +16,7 @@ use tracing::Span;
 ///
 /// # Usage
 ///
-/// Register `TracingLogger` as a middleware for your application using `.wrap` on `App`.  
+/// Register `TracingLogger` as a middleware for your application using `.wrap` on `App`.
 /// In this example we add a [`tracing::Subscriber`] to output structured logs to the console.
 ///
 /// ```rust
@@ -235,17 +235,17 @@ where
     }
 }
 
-fn emit_event_on_error<B: 'static>(outcome: &Result<ServiceResponse<B>, actix_web::Error>) {
+fn emit_event_on_error<B: 'static>(outcome: &Result<ServiceResponse<B>, Error>) {
     match outcome {
         Ok(response) => {
             if let Some(err) = response.response().error() {
                 // use the status code already constructed for the outgoing HTTP response
-                emit_error_event(err.as_response_error(), response.status())
+                emit_error_event(err.as_response_error(), response.status());
             }
         }
         Err(error) => {
             let response_error = error.as_response_error();
-            emit_error_event(response_error, response_error.status_code())
+            emit_error_event(response_error, response_error.status_code());
         }
     }
 }
