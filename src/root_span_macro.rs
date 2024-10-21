@@ -1,5 +1,5 @@
 #[macro_export]
-/// [`root_span!`] creates a new [`tracing::Span`].
+/// `root_span!` creates a new [`tracing::Span`].
 /// It empowers you to add custom properties to the root span on top of the HTTP properties tracked
 /// by [`DefaultRootSpanBuilder`].
 ///
@@ -103,7 +103,7 @@ macro_rules! root_span {
                         http.user_agent = %user_agent,
                         http.target = %$request.uri().path_and_query().map(|p| p.as_str()).unwrap_or(""),
                         http.status_code = $crate::root_span_macro::private::tracing::field::Empty,
-                        otel.name = %format!("HTTP {} {}", http_method, http_route),
+                        otel.name = %format!("{} {}", http_method, http_route),
                         otel.kind = "server",
                         otel.status_code = $crate::root_span_macro::private::tracing::field::Empty,
                         trace_id = $crate::root_span_macro::private::tracing::field::Empty,
@@ -166,6 +166,10 @@ pub mod private {
             feature = "opentelemetry_0_20",
             feature = "opentelemetry_0_21",
             feature = "opentelemetry_0_22",
+            feature = "opentelemetry_0_23",
+            feature = "opentelemetry_0_24",
+            feature = "opentelemetry_0_25",
+            feature = "opentelemetry_0_26",
         ))]
         crate::otel::set_otel_parent(req, span);
     }
