@@ -30,11 +30,11 @@ fn init_telemetry() {
         .with_endpoint("http://localhost:4317")
         .build()
         .expect("Failed to build the span exporter");
-    let provier = opentelemetry_sdk::trace::TracerProvider::builder()
+    let provider = opentelemetry_sdk::trace::TracerProvider::builder()
         .with_batch_exporter(otlp_exporter, TokioCurrentThread)
         .with_config(Config::default().with_resource(RESOURCE.clone()))
         .build();
-    let tracer = provier.tracer(APP_NAME);
+    let tracer = provider.tracer(APP_NAME);
 
     // Filter based on level - trace, debug, info, warn, error
     // Tunable via `RUST_LOG` env variable
