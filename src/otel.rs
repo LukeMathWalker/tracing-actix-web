@@ -82,7 +82,7 @@ impl<'a> RequestHeaderCarrier<'a> {
     }
 }
 
-impl<'a> Extractor for RequestHeaderCarrier<'a> {
+impl Extractor for RequestHeaderCarrier<'_> {
     fn get(&self, key: &str) -> Option<&str> {
         self.headers.get(key).and_then(|v| v.to_str().ok())
     }
@@ -139,5 +139,5 @@ pub(crate) fn set_otel_parent(req: &ServiceRequest, span: &tracing::Span) {
         format!("{:032x}", id)
     };
 
-    span.record("trace_id", &tracing::field::display(trace_id));
+    span.record("trace_id", tracing::field::display(trace_id));
 }
