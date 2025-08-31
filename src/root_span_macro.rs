@@ -100,6 +100,7 @@ macro_rules! root_span {
                         http.scheme = %$crate::root_span_macro::private::http_scheme(connection_info.scheme()),
                         http.host = %connection_info.host(),
                         http.client_ip = %$request.connection_info().realip_remote_addr().unwrap_or(""),
+                        http.peer_ip = %$request.connection_info().peer_addr().unwrap_or(""),
                         http.user_agent = %user_agent,
                         http.target = %$request.uri().path_and_query().map(|p| p.as_str()).unwrap_or(""),
                         http.status_code = $crate::root_span_macro::private::tracing::field::Empty,
